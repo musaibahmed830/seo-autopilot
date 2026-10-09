@@ -10,19 +10,15 @@
      "sitemap_urls": 52,
      "sitemap_newest": "2026-10-09",
      "issues": [
-      "Meta description length is 172 (aim for 70-160)",
-      "3 links on homepage point to '#' (empty links)"
+      "Meta description length is 172 (aim for 70-160)"
      ],
-     "fix_pr_url": "https://github.com/musaibahmed830/Fashion-2025/pull/3",
-     "drafts_open": 1,
+     "pr_url": "https://github.com/musaibahmed830/Fashion-2025/pull/4",
+     "drafts_open": 2,
      "merged_total": 1,
      "merged_30d": 1,
      "notes": [
-      "Post step failed: Gemini failed - gemini-2.5-flash HTTP 404: This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the lates",
-      "Auto-fix PR created (1 change(s))",
-      "`components/Footer.tsx` line 81: left as '#' (Social media link for Facebook)",
-      "`components/Footer.tsx` line 86: left as '#' (Social media link for Instagram)",
-      "`components/Footer.tsx` line 91: left as '#' (Social media icon markup element)"
+      "Draft post created",
+      "Auto-fix skipped: a fix Pull Request is already waiting for your review"
      ]
     }
    ],
@@ -30,5 +26,5 @@
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-09T21:51:09.661476Z"
+ "updated": "2026-10-09T21:57:56.968398Z"
 }
