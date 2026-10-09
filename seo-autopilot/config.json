@@ -1,0 +1,21 @@
+{
+  "sites": [
+    {
+      "name": "StyleVogue",
+      "repo": "https://github.com/musaibahmed830/Fashion-2025",
+      "site": "https://stylevoguefashion.com",
+      "branch": "main",
+      "content_dir": "content/posts",
+      "ext": "mdx",
+      "niche": "Pakistani fashion",
+      "queries": [
+        "Pakistani fashion",
+        "Pakistani designer collection",
+        "lawn collection 2026",
+        "Pakistani bridal fashion",
+        "fashion week Pakistan"
+      ],
+      "max_open_prs": 3
+    }
+  ]
+}
