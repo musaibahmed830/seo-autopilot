@@ -16,6 +16,12 @@ Dashboard: GitHub Pages par.
 7. Actions tab > "Daily autopilot" > Run workflow. 3-5 minute baad dashboard:
    https://TUMHARA-USERNAME.github.io/seo-autopilot/
 
+## Auto-fix (naya)
+Audit mein 2 cheezein milen to tool khud fix likh kar ek alag Pull Request kholta hai (`auto/fix-...`):
+- Meta description 160 characters se lambi/70 se chhoti ho
+- Homepage par `href="#"` wale links (sirf wahi badalta hai jinka label kisi asli page se match karta ho; baqi ko "Needs your decision" mein likh deta hai)
+Ye sirf PR banata hai, tumhare merge karne tak site par kuch nahi badalta. Band karne ke liye `config.json` mein `"auto_fix": false` kar do.
+
 ## Roz ka kaam
 Dashboard kholo, "Review drafts" dabao, post padho, theek karo, Merge karo = site par publish.
 
