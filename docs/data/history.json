@@ -1,1 +1,30 @@
-{"sites": {}}
+{
+ "sites": {
+  "StyleVogue": {
+   "days": [
+    {
+     "date": "2026-10-09",
+     "load_sec": 0.76,
+     "links_checked": 25,
+     "links_broken": 0,
+     "sitemap_urls": 52,
+     "sitemap_newest": "2026-07-15",
+     "issues": [
+      "Meta description length is 172 (aim for 70-160)",
+      "3 links on homepage point to '#' (empty links)",
+      "Newest sitemap entry is 86 days old (site looks inactive)"
+     ],
+     "drafts_open": 0,
+     "merged_total": 0,
+     "merged_30d": 0,
+     "notes": [
+      "Post step failed: Gemini failed after retries (limit or bad key)"
+     ]
+    }
+   ],
+   "repo": "musaibahmed830/Fashion-2025",
+   "site": "https://stylevoguefashion.com"
+  }
+ },
+ "updated": "2026-10-09T21:20:12.801956Z"
+}
