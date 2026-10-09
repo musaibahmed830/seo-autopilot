@@ -26,7 +26,7 @@ HIST = ROOT / "docs" / "data" / "history.json"
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 GH_TOKEN = os.environ.get("TARGET_REPO_TOKEN", "")
 PSI_KEY = os.environ.get("PSI_API_KEY", "")
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+MODELS = [m for m in (os.environ.get("GEMINI_MODEL"), "gemini-3.5-flash", "gemini-3-flash-preview", "gemini-2.5-flash") if m]
 TODAY = datetime.date.today().isoformat()
 
 
@@ -212,21 +212,32 @@ def headlines(queries):
 
 
 def gemini(prompt):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.8},
     }).encode()
     hdr = {"Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY}
-    for attempt in range(4):
-        code, resp, _ = http(url, body, hdr, timeout=120)
-        if code == 200:
+    last = "no response"
+    for model in MODELS:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        for attempt in range(3):
+            code, resp, _ = http(url, body, hdr, timeout=120)
+            if code == 200:
+                try:
+                    return json.loads(json.loads(resp)["candidates"][0]["content"]["parts"][0]["text"])
+                except Exception:
+                    last = f"{model}: reply was not valid JSON"
+                    break
             try:
-                return json.loads(json.loads(resp)["candidates"][0]["content"]["parts"][0]["text"])
+                msg = json.loads(resp)["error"]["message"][:140]
             except Exception:
-                pass
-        time.sleep(20 * (attempt + 1))  # free tier: back off on 429
-    raise RuntimeError("Gemini failed after retries (limit or bad key)")
+                msg = resp[:140].decode("utf-8", "ignore")
+            last = f"{model} HTTP {code}: {msg}"
+            if code == 429:
+                time.sleep(30 * (attempt + 1))  # free tier limit: wait and retry
+                continue
+            break  # 400/403/404: try the next model
+    raise RuntimeError("Gemini failed - " + last)
 
 
 def build_prompt(niche, heads, slugs):
