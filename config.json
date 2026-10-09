@@ -15,7 +15,8 @@
         "Pakistani bridal fashion",
         "fashion week Pakistan"
       ],
-      "max_open_prs": 3
+      "max_open_prs": 3,
+      "auto_fix": true
     }
   ]
 }
