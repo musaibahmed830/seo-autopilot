@@ -4,22 +4,20 @@
    "days": [
     {
      "date": "2026-10-09",
-     "load_sec": 0.82,
+     "load_sec": 0.27,
      "links_checked": 25,
      "links_broken": 0,
      "sitemap_urls": 52,
-     "sitemap_newest": "2026-07-15",
+     "sitemap_newest": "2026-10-09",
      "issues": [
       "Meta description length is 172 (aim for 70-160)",
-      "3 links on homepage point to '#' (empty links)",
-      "Newest sitemap entry is 86 days old (site looks inactive)"
+      "3 links on homepage point to '#' (empty links)"
      ],
-     "pr_url": "https://github.com/musaibahmed830/Fashion-2025/pull/1",
      "drafts_open": 1,
-     "merged_total": 0,
-     "merged_30d": 0,
+     "merged_total": 1,
+     "merged_30d": 1,
      "notes": [
-      "Draft post created"
+      "Post step failed: Gemini failed - gemini-2.5-flash HTTP 404: This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the lates"
      ]
     }
    ],
@@ -27,5 +25,5 @@
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-09T21:35:17.814780Z"
+ "updated": "2026-10-09T21:40:06.999267Z"
 }
