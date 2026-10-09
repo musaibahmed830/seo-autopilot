@@ -61,6 +61,7 @@ function site(name,s){
   g2.append(stat(last.merged_total,'Posts published, total'),stat(last.sitemap_urls,'Pages in sitemap'),stat(last.links_broken,'Broken links found'),stat(last.sitemap_newest,'Newest page date'));
   c.append(g2);
   if(last.pr_url){const p=el('p','', 'New draft today: ');const a=el('a','','open it');a.href=last.pr_url;a.target='_blank';p.append(a);c.append(p)}
+  if(last.fix_pr_url){const p=el('p','', 'Auto-fix ready for review: ');const a=el('a','','open it');a.href=last.fix_pr_url;a.target='_blank';p.append(a);c.append(p)}
   c.append(el('h3','','Problems found on the site (latest run)'));
   const iss=last.issues||[];
   if(!iss.length){c.append(el('div','ok','No problems found'))}
