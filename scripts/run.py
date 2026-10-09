@@ -30,7 +30,7 @@ HIST = ROOT / "docs" / "data" / "history.json"
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 GH_TOKEN = os.environ.get("TARGET_REPO_TOKEN", "")
 PSI_KEY = os.environ.get("PSI_API_KEY", "")
-MODELS = [m for m in (os.environ.get("GEMINI_MODEL"), "gemini-3.5-flash", "gemini-3-flash-preview", "gemini-2.5-flash") if m]
+FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3-flash-preview", "gemini-2.5-flash"]
 TODAY = datetime.date.today().isoformat()
 
 
@@ -218,14 +218,41 @@ def headlines(queries):
     return out[:30]
 
 
+def discover_models():
+    """Ask Google which flash models this key can use, newest first."""
+    code, body, _ = http("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
+                         headers={"x-goog-api-key": GEMINI_KEY}, timeout=30)
+    if code != 200:
+        return []
+    bad = ("image", "tts", "live", "audio", "embed", "native", "robotics", "computer", "thinking", "vision")
+    found = []
+    for m in json.loads(body).get("models", []):
+        name = m.get("name", "").replace("models/", "")
+        if "flash" not in name or any(x in name for x in bad):
+            continue
+        if "generateContent" not in m.get("supportedGenerationMethods", []):
+            continue
+        v = re.search(r"gemini-(\d+(?:\.\d+)?)", name)
+        ver = float(v.group(1)) if v else 0
+        stable = 0 if ("preview" in name or "exp" in name) else 1
+        lite = 0 if "lite" in name else 1
+        found.append((ver, stable, lite, name))
+    found.sort(reverse=True)
+    return [f[3] for f in found[:4]]
+
+
 def gemini(prompt):
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.8},
     }).encode()
     hdr = {"Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY}
-    last = "no response"
-    for model in MODELS:
+    models = []
+    for m in [os.environ.get("GEMINI_MODEL")] + discover_models() + FALLBACK_MODELS:
+        if m and m not in models:
+            models.append(m)
+    errors = []
+    for model in models[:6]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
         for attempt in range(3):
             code, resp, _ = http(url, body, hdr, timeout=120)
@@ -233,18 +260,18 @@ def gemini(prompt):
                 try:
                     return json.loads(json.loads(resp)["candidates"][0]["content"]["parts"][0]["text"])
                 except Exception:
-                    last = f"{model}: reply was not valid JSON"
+                    errors.append(f"{model}: reply was not valid JSON")
                     break
             try:
-                msg = json.loads(resp)["error"]["message"][:140]
+                msg = json.loads(resp)["error"]["message"][:90]
             except Exception:
-                msg = resp[:140].decode("utf-8", "ignore")
-            last = f"{model} HTTP {code}: {msg}"
+                msg = resp[:90].decode("utf-8", "ignore")
+            errors.append(f"{model} HTTP {code}: {msg}")
             if code == 429:
                 time.sleep(30 * (attempt + 1))  # free tier limit: wait and retry
                 continue
             break  # 400/403/404: try the next model
-    raise RuntimeError("Gemini failed - " + last)
+    raise RuntimeError("Gemini failed - " + " | ".join(errors)[:600])
 
 
 def build_prompt(niche, heads, slugs):
