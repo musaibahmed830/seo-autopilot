@@ -9,10 +9,14 @@ For every site in config.json it will:
 """
 import base64
 import datetime
+import html
 import json
 import os
 import pathlib
 import re
+import shutil
+import subprocess
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -142,6 +146,7 @@ def audit(site):
         if urllib.parse.urlparse(u).netloc == host and u not in seen and u != site + "/":
             seen.add(u)
             sample.append(u)
+    raw_urls = []
     broken = []
     for u in sample[:25]:
         c = http(u, timeout=30)[0]
@@ -163,6 +168,7 @@ def audit(site):
             locs = [e for e in root.iter() if e.tag.endswith("}loc") or e.tag == "loc"]
             mods = [e.text[:10] for e in root.iter() if (e.tag.endswith("}lastmod") or e.tag == "lastmod") and e.text]
             m["sitemap_urls"] = len(locs)
+            raw_urls = [e.text.strip() for e in locs if e.text][:80]
             if mods:
                 newest = max(mods)
                 m["sitemap_newest"] = newest
@@ -171,7 +177,8 @@ def audit(site):
                     issues.append(f"Newest sitemap entry is {age} days old (site looks inactive)")
         except Exception:
             issues.append("sitemap.xml could not be parsed")
-    return {"issues": issues, "metrics": m}
+    raw = {"desc": p.desc, "title": t, "hash_links": dead, "urls": raw_urls + sample[:40]}
+    return {"issues": issues, "metrics": m, "raw": raw}
 
 
 def psi(url):
@@ -339,6 +346,198 @@ def pr_stats(repo):
     }
 
 
+# ---------- 4. auto-fix (opens a Pull Request; you review + merge) ----------
+SRC_EXT = (".tsx", ".jsx", ".ts", ".js", ".mjs", ".html", ".astro", ".vue", ".svelte", ".php")
+SKIP_DIRS = {"node_modules", ".git", ".next", "dist", "build", "out", ".vercel", ".astro", ".github"}
+HASH_RE = re.compile(r"""(\bhref\s*[:=]\s*\{?\s*)(["'])#\2""")
+TRANSFORMS = [
+    lambda s: s,
+    lambda s: html.escape(s, quote=False),
+    lambda s: s.replace("'", "\\'"),
+    lambda s: s.replace('"', '\\"'),
+]
+
+
+def git(args, cwd=None, auth=True):
+    cmd = ["git"]
+    b64 = base64.b64encode(("x-access-token:" + GH_TOKEN).encode()).decode()
+    if auth:
+        cmd += ["-c", "http.https://github.com/.extraheader=AUTHORIZATION: basic " + b64]
+    cmd += ["-c", "user.name=autopilot[bot]", "-c", "user.email=autopilot@users.noreply.github.com"] + args
+    r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=300)
+    if r.returncode != 0:
+        err = (r.stderr or "")[-300:].replace(GH_TOKEN, "***").replace(b64, "***")
+        raise RuntimeError(f"git {args[0]} failed: {err}")
+    return r.stdout
+
+
+def source_files(dest, content_dir):
+    skip_content = (dest / content_dir.strip("/")).resolve()
+    out = []
+    for p in dest.rglob("*"):
+        if not p.is_file() or p.suffix not in SRC_EXT:
+            continue
+        rel = p.relative_to(dest)
+        if any(part in SKIP_DIRS for part in rel.parts):
+            continue
+        if skip_content in p.resolve().parents:
+            continue
+        try:
+            if p.stat().st_size > 300_000:
+                continue
+        except OSError:
+            continue
+        out.append(p)
+    return out
+
+
+def fix_meta(dest, files, desc, title, niche):
+    found = []
+    for f in files:
+        txt = f.read_text(encoding="utf-8", errors="ignore")
+        for i, t in enumerate(TRANSFORMS):
+            v = t(desc)
+            if v in txt:
+                found.append((f, i, txt.count(v)))
+                break
+    if not found:
+        return [], f"Meta description ({len(desc)} chars) text not found in the source code; shorten it by hand"
+    if sum(c for _, _, c in found) > 4:
+        return [], "Meta description text appears in too many places; shorten it by hand"
+    res = gemini(
+        f"Rewrite this website meta description so it is between 120 and 155 characters.\n"
+        f"Keep the meaning and the main keywords. Niche: {niche}. Page title: {title}.\n"
+        f"Do not use double quotes, backslashes, backticks or angle brackets.\n"
+        f"Current ({len(desc)} chars): {desc}\n"
+        f'Return JSON: {{"description": "..."}}')
+    new = (res.get("description") if isinstance(res, dict) else "") or ""
+    new = new.strip()
+    if not 70 <= len(new) <= 160 or any(ch in new for ch in '"\\`<>') or "${" in new:
+        return [], "Gemini gave an unusable meta description; skipped"
+    changes = []
+    for f, i, _ in found:
+        txt = f.read_text(encoding="utf-8", errors="ignore")
+        f.write_text(txt.replace(TRANSFORMS[i](desc), TRANSFORMS[i](new)), encoding="utf-8")
+        changes.append(f"Meta description in `{f.relative_to(dest)}`: {len(desc)} -> {len(new)} characters\n"
+                       f"  - old: {desc}\n  - new: {new}")
+    return changes, None
+
+
+def fix_hash_links(dest, files, urls):
+    allowed = []
+    for u in urls:
+        path = urllib.parse.urlparse(u).path or "/"
+        if path not in allowed:
+            allowed.append(path)
+    allowed = allowed[:80]
+    occ = []
+    for f in files:
+        txt = f.read_text(encoding="utf-8", errors="ignore")
+        lines = txt.split("\n")
+        for m in HASH_RE.finditer(txt):
+            ln = txt.count("\n", 0, m.start())
+            ctx = "\n".join(lines[max(0, ln - 3): ln + 4])[:600]
+            occ.append({"id": len(occ), "file": f, "idx": m.end() - 2, "line": ln + 1, "context": ctx})
+            if len(occ) >= 12:
+                break
+        if len(occ) >= 12:
+            break
+    if not occ:
+        return [], ["Empty '#' links were not found in the source code; check them by hand"]
+    items = [{"id": o["id"], "file": str(o["file"].relative_to(dest)), "line": o["line"], "code": o["context"]} for o in occ]
+    res = gemini(
+        "Each item below is a link in a website's source code whose href is just \"#\".\n"
+        "For each, decide if it is meant to open a page of this site.\n"
+        "- action \"replace\": ONLY if the link label/context clearly matches one page, and href is copied EXACTLY\n"
+        "  from the allowed list. Never invent a URL.\n"
+        "- action \"keep\": for dropdown toggles, buttons, scroll-to-top, social icons, or when unsure.\n"
+        f"Allowed hrefs: {json.dumps(allowed)}\n"
+        f"Items: {json.dumps(items)}\n"
+        'Return JSON list: [{"id": 0, "action": "replace" or "keep", "href": "/path or empty", "reason": "short"}]')
+    decisions = res if isinstance(res, list) else (res.get("items") if isinstance(res, dict) else [])
+    by_file, changes, manual = {}, [], []
+    for d in decisions or []:
+        try:
+            o = occ[int(d["id"])]
+        except Exception:
+            continue
+        if d.get("action") == "replace" and d.get("href") in allowed:
+            by_file.setdefault(o["file"], []).append((o["idx"], d["href"], o))
+        else:
+            manual.append(f"`{o['file'].relative_to(dest)}` line {o['line']}: left as '#' ({d.get('reason') or 'needs your decision'})")
+    for f, reps in by_file.items():
+        txt = f.read_text(encoding="utf-8", errors="ignore")
+        for idx, href, o in sorted(reps, key=lambda r: r[0], reverse=True):
+            if txt[idx] == "#":
+                txt = txt[:idx] + href + txt[idx + 1:]
+                changes.append(f"`{f.relative_to(dest)}` line {o['line']}: href '#' -> '{href}'")
+        f.write_text(txt, encoding="utf-8")
+    decided = {int(d["id"]) for d in decisions or [] if isinstance(d, dict) and str(d.get("id", "")).isdigit()}
+    for o in occ:
+        if o["id"] not in decided:
+            manual.append(f"`{o['file'].relative_to(dest)}` line {o['line']}: left as '#' (not decided)")
+    return changes, manual
+
+
+def fix_site(s, repo, raw):
+    if s.get("auto_fix", True) is False:
+        return None, []
+    desc = raw.get("desc") or ""
+    need_meta = bool(desc) and not 70 <= len(desc) <= 160
+    need_hash = raw.get("hash_links", 0) > 0
+    if not (need_meta or need_hash):
+        return None, []
+    branch = s.get("branch", "main")
+    code, prs = gh(f"/repos/{repo}/pulls?state=open&per_page=100")
+    if code != 200:
+        raise RuntimeError(f"cannot read pull requests (HTTP {code})")
+    if any(x["head"]["ref"].startswith("auto/fix-") for x in prs):
+        return None, ["Auto-fix skipped: a fix Pull Request is already waiting for your review"]
+    tmp = tempfile.mkdtemp()
+    try:
+        dest = pathlib.Path(tmp) / "repo"
+        git(["clone", "--depth", "1", "--branch", branch, f"https://github.com/{repo}.git", str(dest)])
+        files = source_files(dest, s.get("content_dir", "content/posts"))
+        changes, notes = [], []
+        if need_meta:
+            try:
+                c, why = fix_meta(dest, files, desc, raw.get("title", ""), s.get("niche", ""))
+                changes += c
+                if why:
+                    notes.append(why)
+            except Exception as e:
+                notes.append(f"Meta fix failed: {e}")
+        if need_hash:
+            try:
+                c, m = fix_hash_links(dest, files, raw.get("urls", []))
+                changes += c
+                notes += m
+            except Exception as e:
+                notes.append(f"Link fix failed: {e}")
+        if not changes:
+            return None, ["Auto-fix: no safe change could be made"] + notes
+        bname = f"auto/fix-{TODAY}"
+        git(["checkout", "-b", bname], cwd=dest, auth=False)
+        git(["add", "-A"], cwd=dest, auth=False)
+        git(["commit", "-m", "Auto-fix SEO issues found by audit"], cwd=dest, auth=False)
+        git(["push", "origin", bname], cwd=dest)
+        body = "Auto-generated SEO fixes. Check the changed files, then merge.\n\n## Changes\n"
+        body += "\n".join("- " + c for c in changes)
+        if notes:
+            body += "\n\n## Needs your decision (not changed)\n" + "\n".join("- " + n for n in notes)
+        pr = {"title": "SEO fixes: meta description and empty links", "head": bname, "base": branch,
+              "body": body, "draft": True}
+        code, res = gh(f"/repos/{repo}/pulls", "POST", pr)
+        if code == 422:
+            pr.pop("draft")
+            code, res = gh(f"/repos/{repo}/pulls", "POST", pr)
+        if code not in (200, 201):
+            raise RuntimeError(f"cannot open fix pull request (HTTP {code})")
+        return res["html_url"], [f"Auto-fix PR created ({len(changes)} change(s))"] + notes
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 # ---------- main ----------
 def main():
     hist = {"sites": {}}
@@ -349,9 +548,10 @@ def main():
             pass
     for s in CONFIG["sites"]:
         name, repo, site = s["name"], norm_repo(s["repo"]), s["site"].rstrip("/")
-        rec, notes = {"date": TODAY}, []
+        rec, notes, raw = {"date": TODAY}, [], {}
         try:
             a = audit(site)
+            raw = a.get("raw", {})
             rec.update(a["metrics"])
             rec["issues"] = a["issues"]
         except Exception as e:
@@ -369,6 +569,13 @@ def main():
                     rec["pr_url"] = url
             except Exception as e:
                 notes.append(f"Post step failed: {e}")
+            try:
+                fix_url, fix_msgs = fix_site(s, repo, raw)
+                notes += fix_msgs
+                if fix_url:
+                    rec["fix_pr_url"] = fix_url
+            except Exception as e:
+                notes.append(f"Auto-fix step failed: {e}")
             try:
                 rec.update(pr_stats(repo))
             except Exception as e:
