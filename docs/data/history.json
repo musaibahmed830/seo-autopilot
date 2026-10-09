@@ -4,7 +4,7 @@
    "days": [
     {
      "date": "2026-10-09",
-     "load_sec": 1.2,
+     "load_sec": 0.82,
      "links_checked": 25,
      "links_broken": 0,
      "sitemap_urls": 52,
@@ -14,11 +14,12 @@
       "3 links on homepage point to '#' (empty links)",
       "Newest sitemap entry is 86 days old (site looks inactive)"
      ],
-     "drafts_open": 0,
+     "pr_url": "https://github.com/musaibahmed830/Fashion-2025/pull/1",
+     "drafts_open": 1,
      "merged_total": 0,
      "merged_30d": 0,
      "notes": [
-      "Post step failed: cannot open pull request (HTTP 403)"
+      "Draft post created"
      ]
     }
    ],
@@ -26,5 +27,5 @@
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-09T21:29:33.713780Z"
+ "updated": "2026-10-09T21:35:17.814780Z"
 }
