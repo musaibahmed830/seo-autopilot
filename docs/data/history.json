@@ -20,11 +20,27 @@
       "Draft post created",
       "Auto-fix skipped: a fix Pull Request is already waiting for your review"
      ]
+    },
+    {
+     "date": "2026-10-10",
+     "load_sec": 0.23,
+     "links_checked": 25,
+     "links_broken": 0,
+     "sitemap_urls": 52,
+     "sitemap_newest": "2026-10-09",
+     "issues": [],
+     "pr_url": "https://github.com/musaibahmed830/Fashion-2025/pull/5",
+     "drafts_open": 1,
+     "merged_total": 3,
+     "merged_30d": 3,
+     "notes": [
+      "Draft post created"
+     ]
     }
    ],
    "repo": "musaibahmed830/Fashion-2025",
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-09T21:57:56.968398Z"
+ "updated": "2026-10-10T09:43:49.867047Z"
 }
