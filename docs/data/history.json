@@ -39,18 +39,17 @@
     },
     {
      "date": "2026-10-11",
-     "load_sec": 0.1,
+     "load_sec": 0.35,
      "links_checked": 25,
      "links_broken": 0,
      "sitemap_urls": 52,
      "sitemap_newest": "2026-10-10",
      "issues": [],
-     "pr_url": "https://github.com/musaibahmed830/Fashion-2025/pull/7",
-     "drafts_open": 1,
-     "merged_total": 5,
-     "merged_30d": 5,
+     "drafts_open": 0,
+     "merged_total": 6,
+     "merged_30d": 6,
      "notes": [
-      "Draft post created"
+      "Post step failed: Gemini failed - gemini-3.8-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.7-flash HTTP 0: The read operation timed out | gemini-3.6-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.5-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3-flash-preview: reply was not valid JSON | gemini-2.5-flash HTTP 404: This model models/gemini-2.5-flash is no longer available to new users. Please update your"
      ]
     }
    ],
@@ -58,5 +57,5 @@
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-11T09:56:28.841027Z"
+ "updated": "2026-10-11T18:08:49.603598Z"
 }
