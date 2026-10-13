@@ -21,12 +21,15 @@
       "gsc_property": "sc-domain:stylevoguefashion.com",
       "ga4_property_id": "",
       "ga4_utc_offset": 5,
-      "posts_per_day": 1,
+      "posts_per_day": 2,
       "default_peak_hours_utc": [14, 17],
-      "topic_mix": {"fashion": 0.6, "news": 0.4},
-      "news_category": "Trending",
+      "topic_mix": {"fashion": 0.4, "products": 0.25, "celebrity": 0.2, "news": 0.15},
+      "category_by_type": {"news": "Trending", "celebrity": "Trending", "products": "Wardrobe Essentials"},
+      "affiliate_disclosure": "",
       "auto_merge_types": [],
-      "max_open_prs": 5
+      "max_open_prs": 5,
+      "prune_after_days": 7,
+      "prune_min_impressions": 3
     }
   ]
 }
