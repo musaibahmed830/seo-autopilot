@@ -273,6 +273,16 @@ def ga4_hours(pid, offset):
     return hrs
 
 
+def ga4_pageviews(pid):
+    """Page views per page path (28 days): catches social/direct traffic that Search Console misses."""
+    r = gsess(GA_SCOPE).post(f"https://analyticsdata.googleapis.com/v1beta/properties/{pid}:runReport", json={
+        "dateRanges": [{"startDate": "28daysAgo", "endDate": "yesterday"}],
+        "dimensions": [{"name": "pagePath"}], "metrics": [{"name": "screenPageViews"}], "limit": 1000}, timeout=60)
+    if r.status_code != 200:
+        raise RuntimeError(f"GA4 HTTP {r.status_code}: check ga4_property_id and Viewer access")
+    return {row["dimensionValues"][0]["value"]: int(row["metricValues"][0]["value"]) for row in r.json().get("rows", [])}
+
+
 def make_slots(hours, n, default_peaks):
     """Post 2 hours before each peak-traffic hour (time to review, crawl and share)."""
     if hours and sum(hours) >= 50:
@@ -290,7 +300,7 @@ def rank_label(impr, pos, age):
     return "Page 1" if pos <= 10 else "Page 2" if pos <= 20 else "Weak (page 3+)"
 
 
-def match_posts(site_posts, pages):
+def match_posts(site_posts, pages, views=None):
     out = []
     for p in site_posts:
         rows = [g for g in pages if p["slug"] in g["url"]]
@@ -298,7 +308,8 @@ def match_posts(site_posts, pages):
         clicks = sum(g["clicks"] for g in rows)
         pos = sum(g["pos"] * g["impr"] for g in rows) / impr if impr else None
         age = (datetime.date.today() - datetime.date.fromisoformat(p["date"])).days
-        out.append({**p, "clicks": clicks, "impr": impr, "pos": round(pos, 1) if pos else None,
+        pv = sum(v for path, v in views.items() if p["slug"] in path) if views is not None else None
+        out.append({**p, "clicks": clicks, "impr": impr, "views": pv, "pos": round(pos, 1) if pos else None,
                     "age": age, "rank": rank_label(impr, pos, age)})
     return out
 
@@ -345,19 +356,25 @@ def child(it, name):
 
 
 def collect_trends(regions):
-    T, N, F = [], [], []
+    out = {"trends": [], "news": [], "fashion": [], "celeb": [], "products": []}
     for r in regions:
         cc, hl, lang = r["code"], r["hl"], r["lang"]
         for it in rss_items(f"https://trends.google.com/trending/rss?geo={cc}")[:8]:
             t = (it.findtext("title") or "").strip()
             if t:
-                T.append(f"[{cc}] {t} (searches: {child(it, 'approx_traffic') or '?'})")
+                out["trends"].append(f"[{cc}] {t} (searches: {child(it, 'approx_traffic') or '?'})")
         q = f"hl={hl}&gl={cc}&ceid={cc}:{lang}"
-        for it in rss_items("https://news.google.com/rss?" + q)[:5]:
-            N.append(f"[{cc}] {(it.findtext('title') or '').strip()}")
-        for it in rss_items("https://news.google.com/rss/search?q=fashion+when:3d&" + q)[:4]:
-            F.append(f"[{cc}] {(it.findtext('title') or '').strip()}")
-    return T, N, F
+
+        def search(term, n):
+            url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(term + " when:3d") + "&" + q
+            return [f"[{cc}] {(it.findtext('title') or '').strip()}" for it in rss_items(url)[:n]]
+
+        out["news"] += [f"[{cc}] {(it.findtext('title') or '').strip()}"
+                        for it in rss_items("https://news.google.com/rss?" + q)[:5]]
+        out["fashion"] += search("fashion", 4)
+        out["celeb"] += search("actor OR actress OR celebrity", 4)
+        out["products"] += search("best selling fashion OR fashion sale OR viral fashion product", 4)
+    return out
 
 
 def autocomplete(seed, cc="US"):
@@ -390,21 +407,46 @@ def gemini(prompt):
     raise RuntimeError("Gemini failed after retries (limit reached or bad key)")
 
 
-def pick_topic(ptype, trends, news, fash, insights, slugs):
+TYPE_RULES = {
+    "fashion": (["fashion", "trends"],
+                "Prefer fashion, style, beauty and accessory topics. If a general trend (event, festival, season, "
+                "celebrity look) has a fashion angle, use that angle."),
+    "news": (["trends", "news"],
+             "Prefer entertainment, tech, sports, culture, lifestyle and business stories many people are "
+             "searching for. Write it as a clear explainer."),
+    "celebrity": (["celeb", "trends"],
+                  "Choose ONE actor, actress, model or public figure who is trending right now in the lists. The angle "
+                  "must be their PUBLIC work and style only (projects, awards, red-carpet looks, fashion influence). "
+                  "Never private life, relationships, gossip, rumours, health, legal matters or controversies."),
+    "products": (["products", "fashion"],
+                 "Choose ONE fashion product category or shopping theme that is selling or trending right now "
+                 "(for example a type of sneaker, bag, denim cut or a seasonal sale theme). Think shopping guide, "
+                 "not an ad for one brand."),
+}
+SHAPES = {
+    "fashion": "Include practical styling tips and a short FAQ.",
+    "news": "Sections: What happened, Why it matters, What to know, FAQ.",
+    "celebrity": ("Sections: Why they are trending, Public highlights (projects, awards, looks), Style takeaways, FAQ. "
+                  "Use only public professional information from the headlines. No rumours, no private life, "
+                  "no health or legal claims, no invented quotes."),
+    "products": ("Sections: What is trending, 5-8 product types to look for (no specific prices), How to choose, "
+                 "Styling and care tips, FAQ. No prices, no best-seller rank claims, no fake reviews or ratings. "
+                 "Tell readers to check current prices and availability at the retailer."),
+}
+
+
+def pool_for(ptype, P, n=35):
+    keys = TYPE_RULES[ptype][0]
+    return [x for k in keys for x in P[k][:n]]
+
+
+def pick_topic(ptype, P, insights, slugs):
     nl = "\n"
-    if ptype == "fashion":
-        pool = fash[:30] + trends[:40]
-        rule = ("Prefer fashion, style, beauty and accessory topics. If a general trend (event, festival, season, "
-                "celebrity look) has a fashion angle, use that angle.")
-    else:
-        pool = trends[:50] + news[:40]
-        rule = ("Prefer entertainment, tech, sports, culture, lifestyle and business stories many people are "
-                "searching for. Write it as a clear explainer.")
     prompt = f"""You are the editorial strategist of a global English-language fashion and trends website.
-Today: {TODAY}. Content type to write now: {ptype}. {rule}
+Today: {TODAY}. Content type to write now: {ptype}. {TYPE_RULES[ptype][1]}
 
 LIVE TRENDS AND HEADLINES (country code in brackets):
-{nl.join(pool)}
+{nl.join(pool_for(ptype, P))}
 
 PERFORMANCE FEEDBACK FROM OUR OWN DATA (learn from it):
 {insights}
@@ -421,8 +463,6 @@ people would search), angle (one sentence)."""
 
 def write_article(topic, kws, ptype, ctx):
     nl = "\n"
-    shape = ("Sections: What happened, Why it matters, What to know, FAQ." if ptype == "news"
-             else "Include practical styling tips and a short FAQ.")
     prompt = f"""Write an original, helpful article of 900-1300 words in Markdown for a global English-language website.
 Topic: {topic.get('topic')}. Angle: {topic.get('angle')}. Main region: {topic.get('region')}.
 Primary keyword: {topic.get('seed_keyword')}. Weave in these related search phrases naturally (only where they fit):
@@ -434,7 +474,7 @@ Source headlines (the ONLY facts you may rely on, plus very general well-known k
 Rules:
 - Do NOT invent quotes, numbers, prices, dates or claims. If unsure, stay general. Say "according to media reports" when needed.
 - {SAFE}
-- Use H2/H3 headings, short intro, no H1, no filler, natural human tone. {shape}
+- Use H2/H3 headings, short intro, no H1, no filler, natural human tone. {SHAPES[ptype]}
 Return JSON with keys: title (max 60 chars, includes the primary keyword), slug (kebab-case), description (max 155 chars),
 category (one of: Trending, Style Tips, Accessories, Wardrobe Essentials, Sustainable), tags (list of 3-6), body (Markdown)."""
     return gemini(prompt)
@@ -458,23 +498,25 @@ def make_post(s, repo, insights, regions):
         return None, f"Skipped new post: {len(waiting)} drafts are waiting for your review"
     code, files = gh(f"/repos/{repo}/contents/{cdir}?ref={branch}")
     slugs = [f["name"].rsplit(".", 1)[0] for f in files] if code == 200 and isinstance(files, list) else []
-    mix = s.get("topic_mix", {"fashion": 0.6, "news": 0.4})
+    mix = {k: v for k, v in s.get("topic_mix", {"fashion": 0.4, "products": 0.25, "celebrity": 0.2, "news": 0.15}).items()
+           if k in TYPE_RULES}
     ptype = random.choices(list(mix), weights=list(mix.values()))[0]
-    trends, news, fash = collect_trends(regions)
-    if not (trends or news or fash):
+    P = collect_trends(regions)
+    if not any(P.values()):
         raise RuntimeError("no trending data fetched")
-    topic = pick_topic(ptype, trends, news, fash, insights, slugs)
+    topic = pick_topic(ptype, P, insights, slugs)
     seed = topic.get("seed_keyword") or topic.get("topic", "fashion")
     reg = str(topic.get("region") or "").upper()
     cc = reg if len(reg) == 2 and reg.isalpha() else "US"
-    post = write_article(topic, autocomplete(seed, cc), ptype, trends + news + fash)
+    post = write_article(topic, autocomplete(seed, cc), ptype, pool_for(ptype, P, 25) + P['trends'][:30])
     if len(post.get("body", "").split()) < 600:
         raise RuntimeError("generated post too short, not saved")
     slug = re.sub(r"[^a-z0-9-]+", "-", post["slug"].lower()).strip("-")[:70]
     if slug in slugs:
         raise RuntimeError("slug already exists, not saved")
-    if ptype == "news":
-        post["category"] = s.get("news_category", post["category"])
+    post["category"] = s.get("category_by_type", {}).get(ptype, post["category"])
+    if ptype == "products" and s.get("affiliate_disclosure"):
+        post["body"] = "*" + s["affiliate_disclosure"] + "*\n\n" + post["body"]
     code, ref = gh(f"/repos/{repo}/git/ref/heads/{branch}")
     if code != 200:
         raise RuntimeError(f"cannot read branch {branch} (HTTP {code})")
@@ -500,9 +542,60 @@ def make_post(s, repo, insights, regions):
     merged = False
     if auto:
         merged = gh(f"/repos/{repo}/pulls/{res['number']}/merge", "PUT", {"merge_method": "squash"})[0] == 200
-    meta = {"slug": slug, "title": post["title"], "date": TODAY, "type": ptype,
+    meta = {"slug": slug, "title": post["title"], "date": TODAY, "type": ptype, "path": f"{cdir}/{slug}.{ext}",
             "region": topic.get("region", "GLOBAL"), "keyword": seed, "pr": res["html_url"], "auto_merged": merged}
     return meta, ("Post published automatically" if merged else "Draft post created")
+
+
+def prune_posts(s, name, repo, posts_meta, matched):
+    """After N days, open ONE pull request that deletes autopilot posts nobody visits.
+    Needs real Search Console data. Deletion only happens when you merge that PR."""
+    days = int(s.get("prune_after_days", 0))
+    if not days:
+        return None
+    min_impr = int(s.get("prune_min_impressions", 3))
+    branch, ext = s.get("branch", "main"), s.get("ext", "mdx")
+    cdir = s.get("content_dir", "content/posts").strip("/")
+    code, prs = gh(f"/repos/{repo}/pulls?state=open&per_page=100")
+    if code != 200 or any(x["head"]["ref"].startswith("auto/prune-") for x in prs):
+        return None  # one removal PR at a time
+    victims = []
+    for m in matched:
+        if (m["age"] >= days and m["clicks"] == 0 and m["impr"] < min_impr
+                and m.get("views") in (None, 0) and not m.get("prune_pr")):
+            path = m.get("path") or f"{cdir}/{m['slug']}.{ext}"
+            c, f = gh(f"/repos/{repo}/contents/{path}?ref={branch}")
+            if c == 200 and isinstance(f, dict) and f.get("sha"):
+                victims.append((m, path, f["sha"]))  # only posts that really are live on the branch
+    victims = victims[:10]
+    if not victims:
+        return None
+    code, ref = gh(f"/repos/{repo}/git/ref/heads/{branch}")
+    if code != 200:
+        raise RuntimeError(f"cannot read branch {branch} (HTTP {code})")
+    bname = f"auto/prune-{TODAY}"
+    code, _ = gh(f"/repos/{repo}/git/refs", "POST", {"ref": "refs/heads/" + bname, "sha": ref["object"]["sha"]})
+    if code not in (200, 201):
+        raise RuntimeError(f"cannot create prune branch (HTTP {code})")
+    for m, path, sha in victims:
+        code, _ = gh(f"/repos/{repo}/contents/{path}", "DELETE",
+                     {"message": f"Remove low-performing post: {m['slug']}", "sha": sha, "branch": bname})
+        if code != 200:
+            raise RuntimeError(f"cannot delete {path} (HTTP {code})")
+    lines = "\n".join(f"- {m['title']} ({m['age']} days old, {m['impr']} impressions, {m['clicks']} clicks)"
+                      for m, _, _ in victims)
+    note = "" if any(m.get("views") is not None for m, _, _ in victims) else "\nGA4 is not connected, so direct and social visits were not checked."
+    code, res = gh(f"/repos/{repo}/pulls", "POST", {
+        "title": f"Remove {len(victims)} low-performing posts", "head": bname, "base": branch,
+        "body": f"No search clicks and almost no impressions:\n\n{lines}\n{note}\n\n"
+                "Merge to delete them. Close this PR to keep them."})
+    if code not in (200, 201):
+        raise RuntimeError(f"cannot open removal pull request (HTTP {code})")
+    slugs = {m["slug"] for m, _, _ in victims}
+    for m in matched + [p for p in posts_meta if p["site"] == name]:
+        if m["slug"] in slugs:
+            m["prune_pr"] = res["html_url"]
+    return res["html_url"], len(victims)
 
 
 def pr_stats(repo):
@@ -565,10 +658,24 @@ def main():
                     hours = ga4_hours(s["ga4_property_id"], int(s.get("ga4_utc_offset", 0)))
                 except Exception as e:
                     notes.append(f"GA4: {e}")
+            views = None
+            if GOOGLE_SA and s.get("ga4_property_id"):
+                try:
+                    views = ga4_pageviews(s["ga4_property_id"])
+                except Exception as e:
+                    notes.append(f"GA4 page views: {e}")
             sp["hours_utc"] = hours
             sp["slots_utc"], sp["peaks_utc"] = make_slots(hours, ppd, s.get("default_peak_hours_utc", [14, 17]))
-            sp["posts"] = match_posts(mine, pages)
+            sp["posts"] = match_posts(mine, pages, views)
             sp["insights"] = make_insights(sp["posts"], sp.get("gsc"))
+            if GH_TOKEN and (sp.get("gsc") or {}).get("ok"):  # never prune without real traffic data
+                try:
+                    res = prune_posts(s, name, repo, posts, sp["posts"])
+                    if res:
+                        rec["prune_pr_url"] = res[0]
+                        notes.append(f"Removal PR opened for {res[1]} low-performing posts")
+                except Exception as e:
+                    notes.append(f"Prune step failed: {e}")
             if GH_TOKEN:
                 try:
                     rec.update(pr_stats(repo))
@@ -586,7 +693,7 @@ def main():
                 if meta:
                     meta["site"] = name
                     posts.append(meta)
-                    sp.setdefault("posts", []).append({**meta, "clicks": 0, "impr": 0, "pos": None, "age": 0, "rank": "Too new"})
+                    sp.setdefault("posts", []).append({**meta, "clicks": 0, "impr": 0, "views": None, "pos": None, "age": 0, "rank": "Too new"})
                     rec["pr_url"] = meta["pr"]
                     rec.update(pr_stats(repo))
                     notes.append(msg)
