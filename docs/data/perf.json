@@ -11,8 +11,292 @@
     17
    ],
    "posts": [],
-   "insights": "Not enough data yet. Explore varied topics."
+   "insights": "Audience countries (28d clicks): AU 0, DE 0, FR 0, JP 0, US 0\nTop search queries now: celebrity style, fashion trending, fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
+   "gsc": {
+    "ok": true,
+    "range": [
+     "2026-09-13",
+     "2026-10-10"
+    ],
+    "clicks": 0,
+    "impr": 21,
+    "series": [
+     {
+      "d": "09-13",
+      "c": 0,
+      "i": 3
+     },
+     {
+      "d": "09-14",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-15",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-16",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-17",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-18",
+      "c": 0,
+      "i": 1
+     },
+     {
+      "d": "09-19",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-20",
+      "c": 0,
+      "i": 1
+     },
+     {
+      "d": "09-21",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-22",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-23",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-24",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-25",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-26",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-27",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-28",
+      "c": 0,
+      "i": 1
+     },
+     {
+      "d": "09-29",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "09-30",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "10-01",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "10-02",
+      "c": 0,
+      "i": 1
+     },
+     {
+      "d": "10-03",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "10-04",
+      "c": 0,
+      "i": 2
+     },
+     {
+      "d": "10-05",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "10-06",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "10-07",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "10-08",
+      "c": 0,
+      "i": 0
+     },
+     {
+      "d": "10-09",
+      "c": 0,
+      "i": 2
+     },
+     {
+      "d": "10-10",
+      "c": 0,
+      "i": 1
+     }
+    ],
+    "countries": [
+     {
+      "country": "AU",
+      "clicks": 0,
+      "impr": 1
+     },
+     {
+      "country": "DE",
+      "clicks": 0,
+      "impr": 1
+     },
+     {
+      "country": "FR",
+      "clicks": 0,
+      "impr": 3
+     },
+     {
+      "country": "JP",
+      "clicks": 0,
+      "impr": 1
+     },
+     {
+      "country": "US",
+      "clicks": 0,
+      "impr": 6
+     }
+    ],
+    "queries": [
+     {
+      "q": "celebrity style",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 82
+     },
+     {
+      "q": "fashion trending",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 77
+     },
+     {
+      "q": "fashion trends",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 51
+     },
+     {
+      "q": "style trend",
+      "clicks": 0,
+      "impr": 3,
+      "pos": 77.3
+     },
+     {
+      "q": "style trends",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 87
+     },
+     {
+      "q": "vintagestyle",
+      "clicks": 0,
+      "impr": 3,
+      "pos": 94
+     },
+     {
+      "q": "what style is trending right now",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 49
+     }
+    ],
+    "top_pages": [
+     {
+      "url": "https://stylevoguefashion.com/fashion/trends",
+      "clicks": 0,
+      "impr": 8,
+      "pos": 62.8
+     },
+     {
+      "url": "https://stylevoguefashion.com/fashion/vintage-fashion-revival",
+      "clicks": 0,
+      "impr": 4,
+      "pos": 73
+     },
+     {
+      "url": "https://stylevoguefashion.com/fashion/celebrity-style-inspiration",
+      "clicks": 0,
+      "impr": 2,
+      "pos": 45.5
+     },
+     {
+      "url": "https://stylevoguefashion.com/",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 1
+     },
+     {
+      "url": "https://stylevoguefashion.com/about",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 4
+     },
+     {
+      "url": "https://stylevoguefashion.com/contact",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 5
+     },
+     {
+      "url": "https://stylevoguefashion.com/fashion/accessories-transform-outfit",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 8
+     },
+     {
+      "url": "https://stylevoguefashion.com/fashion?category=trending",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 7
+     },
+     {
+      "url": "https://stylevoguefashion.com/privacy",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 3
+     },
+     {
+      "url": "https://stylevoguefashion.com/terms",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 2
+     }
+    ]
+   }
   }
  },
- "updated": "2026-10-13T19:44:55.764610Z"
+ "updated": "2026-10-13T20:15:08.074381Z"
 }

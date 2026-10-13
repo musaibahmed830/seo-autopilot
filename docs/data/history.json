@@ -70,7 +70,7 @@
     },
     {
      "date": "2026-10-13",
-     "load_sec": 0.41,
+     "load_sec": 1.35,
      "links_checked": 25,
      "links_broken": 0,
      "sitemap_urls": 52,
@@ -80,7 +80,6 @@
      "merged_total": 11,
      "merged_30d": 11,
      "notes": [
-      "Search Console not connected (add GOOGLE_SA_JSON secret and gsc_property)",
       "Post step failed: Gemini failed after retries (limit reached or bad key)"
      ]
     }
@@ -89,5 +88,5 @@
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-13T19:44:55.764610Z"
+ "updated": "2026-10-13T20:15:08.074381Z"
 }
