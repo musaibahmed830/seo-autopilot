@@ -1,1 +1,18 @@
-{"sites": {}}
+{
+ "sites": {
+  "StyleVogue": {
+   "hours_utc": null,
+   "slots_utc": [
+    12,
+    15
+   ],
+   "peaks_utc": [
+    14,
+    17
+   ],
+   "posts": [],
+   "insights": "Not enough data yet. Explore varied topics."
+  }
+ },
+ "updated": "2026-10-13T19:44:55.764610Z"
+}

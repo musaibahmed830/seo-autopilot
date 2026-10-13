@@ -70,17 +70,18 @@
     },
     {
      "date": "2026-10-13",
-     "load_sec": 0.47,
+     "load_sec": 0.41,
      "links_checked": 25,
      "links_broken": 0,
      "sitemap_urls": 52,
      "sitemap_newest": "2026-10-13",
      "issues": [],
-     "drafts_open": 1,
-     "merged_total": 10,
-     "merged_30d": 10,
+     "drafts_open": 0,
+     "merged_total": 11,
+     "merged_30d": 11,
      "notes": [
-      "Post step failed: Gemini failed - gemini-3.8-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.7-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.6-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.5-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3-flash-preview HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporar"
+      "Search Console not connected (add GOOGLE_SA_JSON secret and gsc_property)",
+      "Post step failed: Gemini failed after retries (limit reached or bad key)"
      ]
     }
    ],
@@ -88,5 +89,5 @@
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-13T19:20:27.098999Z"
+ "updated": "2026-10-13T19:44:55.764610Z"
 }
