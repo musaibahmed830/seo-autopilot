@@ -70,7 +70,7 @@
     },
     {
      "date": "2026-10-13",
-     "load_sec": 0.59,
+     "load_sec": 0.47,
      "links_checked": 25,
      "links_broken": 0,
      "sitemap_urls": 52,
@@ -80,7 +80,7 @@
      "merged_total": 10,
      "merged_30d": 10,
      "notes": [
-      "Post step failed: Gemini failed - gemini-3.8-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.7-flash: reply was not valid JSON | gemini-3.6-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.5-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3-flash-preview HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-2.5-flash HTTP 404: This model models/gemini-2.5-flash is no l"
+      "Post step failed: Gemini failed - gemini-3.8-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.7-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.6-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3.5-flash HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporary.  | gemini-3-flash-preview HTTP 503: This model is currently experiencing high demand. Spikes in demand are usually temporar"
      ]
     }
    ],
@@ -88,5 +88,5 @@
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-13T19:18:12.776377Z"
+ "updated": "2026-10-13T19:20:27.098999Z"
 }
