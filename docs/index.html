@@ -5,25 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SEO Autopilot Dashboard</title>
 <style>
-:root{--bg:#faf8f5;--card:#fff;--tx:#1d1b1a;--mut:#7a746f;--ac:#b4235a;--ac2:#2b6cb0;--ln:#e8e2dc;--ok:#1f8a4c;--bad:#c0392b}
-@media (prefers-color-scheme:dark){:root{--bg:#17151a;--card:#221f26;--tx:#f1ece8;--mut:#a39c96;--ac:#f06aa0;--ac2:#6cb0f0;--ln:#37323c;--ok:#4cc27f;--bad:#ff7b6b}}
+:root{--bg:#faf8f5;--card:#fff;--tx:#1d1b1a;--mut:#7a746f;--ac:#b4235a;--ac2:#2b6cb0;--ln:#e8e2dc;--ok:#1f8a4c;--warn:#b7791f;--bad:#c0392b}
+@media (prefers-color-scheme:dark){:root{--bg:#17151a;--card:#221f26;--tx:#f1ece8;--mut:#a39c96;--ac:#f06aa0;--ac2:#6cb0f0;--ln:#37323c;--ok:#4cc27f;--warn:#e6b450;--bad:#ff7b6b}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-.w{max-width:820px;margin:0 auto;padding:16px}
-h1{font-size:20px;margin:0}h2{font-size:17px;margin:0}h3{font-size:14px;margin:14px 0 6px}
+.w{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0}h2{font-size:18px;margin:0}h3{font-size:14px;margin:16px 0 6px}
 .sub{color:var(--mut);font-size:13px;margin:2px 0 14px}
 .card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:14px}
 .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .top a{font-size:13px;color:var(--ac);margin-left:10px}
-.g{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-@media(min-width:600px){.g{grid-template-columns:repeat(4,1fr)}}
+.g{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:10px}
+@media(min-width:600px){.g{grid-template-columns:repeat(3,1fr)}}
 .st{border:1px solid var(--ln);border-radius:10px;padding:8px 10px}
 .st b{display:block;font-size:22px}.st span{font-size:12px;color:var(--mut)}
 ul{margin:0;padding-left:18px}li{margin:3px 0;font-size:14px}
-.ok{color:var(--ok)}.bad{color:var(--bad)}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.mut{color:var(--mut)}
 svg{width:100%;height:auto;display:block}
 .leg{font-size:12px;color:var(--mut);display:flex;justify-content:space-between}
-.empty{color:var(--mut);padding:20px 0;text-align:center}
+.empty{color:var(--mut);padding:14px 0;font-size:14px}
+.sc{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--ln);vertical-align:top}
+th{color:var(--mut);font-weight:600}
+.bar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px}
+.bar i{display:block;height:10px;border-radius:5px;background:var(--ac2)}
+.bar span:first-child{width:90px;flex:none}
+pre{white-space:pre-wrap;font:13px/1.5 inherit;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:10px;margin:0}
 </style>
 </head>
 <body>
@@ -33,54 +41,95 @@ svg{width:100%;height:auto;display:block}
 <div id="app"></div>
 </div>
 <script>
+const TZ=5, TZN='PKT'; // your local time zone offset from UTC (Pakistan = +5)
 const app=document.getElementById('app');
-const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e};
-function chart(vals,labels,color,fixedMax){
-  const n=vals.length,mx=fixedMax||Math.max(1,...vals.filter(v=>v!=null));
-  const W=300,X=i=>n>1?i*(W/(n-1)):W/2,Y=v=>80-v/mx*70;
-  let pts=[],dots='';
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined&&x!==null)e.textContent=x;return e};
+const j=u=>fetch(u+'?'+Date.now()).then(r=>r.ok?r.json():{}).catch(()=>({}));
+const hh=h=>String(((h+TZ)%24+24)%24).padStart(2,'0')+':00';
+let names;try{names=new Intl.DisplayNames(['en'],{type:'region'})}catch(e){names=null}
+const cn=c=>{try{return names?names.of(c)||c:c}catch(e){return c}};
+function stat(v,l){const s=el('div','st');s.append(el('b','',v==null||v===''?'-':v),el('span','',l));return s}
+function line(vals,labels,color,fixed){
+  const n=vals.length,mx=fixed||Math.max(1,...vals.filter(v=>v!=null));
+  const X=i=>n>1?i*(300/(n-1)):150,Y=v=>80-v/mx*70;let pts=[],dots='';
   vals.forEach((v,i)=>{if(v!=null){pts.push(X(i).toFixed(1)+','+Y(v).toFixed(1));dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="2.5" fill="'+color+'"/>'}});
-  const d=document.createElement('div');
+  const d=el('div');
   d.innerHTML='<svg viewBox="0 0 300 90"><line x1="0" y1="80" x2="300" y2="80" stroke="currentColor" opacity=".2"/><polyline fill="none" stroke="'+color+'" stroke-width="2" points="'+pts.join(' ')+'"/>'+dots+'</svg>';
-  const l=el('div','leg');l.append(el('span','',labels[0]||''),el('span','','max '+mx),el('span','',labels[n-1]||''));
-  d.append(l);return d;
+  const l=el('div','leg');l.append(el('span','',labels[0]||''),el('span','','max '+mx),el('span','',labels[n-1]||''));d.append(l);return d;
 }
-function stat(v,l){const s=el('div','st');s.append(el('b','',v==null?'-':v),el('span','',l));return s}
-function site(name,s){
+function bars24(hours,peaks,slots){
+  const mx=Math.max(1,...hours);let s='<svg viewBox="0 0 312 100">';
+  for(let u=0;u<24;u++){const h=hours[u]/mx*70,x=u*13,pk=peaks.includes(u),sl=slots.includes(u);
+    s+='<rect x="'+x+'" y="'+(80-h)+'" width="10" height="'+h+'" rx="2" fill="'+(pk?'#b4235a':'#2b6cb0')+'" opacity="'+(pk?1:.55)+'"/>';
+    if(sl)s+='<text x="'+(x+5)+'" y="94" font-size="8" text-anchor="middle" fill="currentColor">post</text>';
+    else if(u%3===0)s+='<text x="'+(x+5)+'" y="94" font-size="8" text-anchor="middle" fill="currentColor" opacity=".6">'+hh(u).slice(0,2)+'</text>'}
+  const d=el('div');d.innerHTML=s+'</svg>';return d;
+}
+function table(cols,rows){
+  const w=el('div','sc'),t=el('table'),hd=el('tr');
+  cols.forEach(c=>hd.append(el('th','',c)));t.append(hd);
+  rows.forEach(r=>{const tr=el('tr');r.forEach(c=>{const td=el('td',c&&c.cls?c.cls:'',c&&c.t!==undefined?c.t:c);tr.append(td)});t.append(tr)});
+  w.append(t);return w;
+}
+const rcls=r=>r==='Page 1'?'ok':r==='Page 2'?'warn':r==='Too new'?'mut':'bad';
+function sec(c,t){c.append(el('h3','',t))}
+function site(name,s,p){
   const days=s.days||[],last=days[days.length-1]||{};
+  const full=[...days].reverse().find(d=>d.perf!=null)||last;
+  const g=(p||{}).gsc||{};
   const c=el('div','card'),top=el('div','top');
   top.append(el('h2','',name));
   const lk=el('div');
   const a1=el('a','','Open site');a1.href=s.site;a1.target='_blank';
   const a2=el('a','','Review drafts');a2.href='https://github.com/'+s.repo+'/pulls';a2.target='_blank';
   lk.append(a1,a2);top.append(lk);c.append(top);
-  const g=el('div','g');
-  g.append(stat(last.perf,'Mobile speed (0-100)'),stat(last.seo,'SEO score (0-100)'),stat(last.merged_30d,'Posts published, 30 days'),stat(last.drafts_open,'Drafts waiting for you'));
-  c.append(g);
-  const g2=el('div','g');g2.style.marginTop='10px';
-  g2.append(stat(last.merged_total,'Posts published, total'),stat(last.sitemap_urls,'Pages in sitemap'),stat(last.links_broken,'Broken links found'),stat(last.sitemap_newest,'Newest page date'));
-  c.append(g2);
-  if(last.pr_url){const p=el('p','', 'New draft today: ');const a=el('a','','open it');a.href=last.pr_url;a.target='_blank';p.append(a);c.append(p)}
-  if(last.fix_pr_url){const p=el('p','', 'Auto-fix ready for review: ');const a=el('a','','open it');a.href=last.fix_pr_url;a.target='_blank';p.append(a);c.append(p)}
-  c.append(el('h3','','Problems found on the site (latest run)'));
-  const iss=last.issues||[];
-  if(!iss.length){c.append(el('div','ok','No problems found'))}
+  const t1=el('div','g');
+  t1.append(stat(g.ok?g.clicks:null,'Search clicks (28 days)'),stat(g.ok?g.impr:null,'Impressions (28 days)'),stat(last.drafts_open??full.drafts_open,'Drafts waiting for you'),
+    stat(last.merged_30d??full.merged_30d,'Posts published (30 days)'),stat(full.perf,'Mobile speed (0-100)'),stat(full.seo,'SEO score (0-100)'));
+  c.append(t1);
+  if(last.pr_url){const q=el('p','','Latest post: ');const a=el('a','','open it');a.href=last.pr_url;a.target='_blank';q.append(a);c.append(q)}
+
+  sec(c,'Next post times ('+TZN+')');
+  const sl=(p||{}).slots_utc||[];
+  c.append(sl.length?el('div','',sl.map(hh).join(', ')+((p||{}).hours_utc?' (based on your GA4 visitor hours)':' (default times, connect GA4 for real data)')):el('div','empty','Run the workflow once.'));
+  if((p||{}).hours_utc){sec(c,'Visitors by hour ('+TZN+'), red = peak');c.append(bars24(p.hours_utc,p.peaks_utc||[],sl))}
+
+  sec(c,'Posts made by autopilot: ranking');
+  const ps=(p||{}).posts||[];
+  if(!ps.length)c.append(el('div','empty','Abhi koi autopilot post nahi hai.'));
+  else c.append(table(['Post','Type','Region','Clicks','Impr.','Avg pos.','Status'],[...ps].reverse().map(x=>[
+    x.title,x.type,x.region,String(x.clicks),String(x.impr),x.pos==null?'-':String(x.pos),{t:x.rank,cls:rcls(x.rank)}])));
+
+  if(g.ok){
+    sec(c,'Where your viewers come from (28 days)');
+    const mx=Math.max(1,...(g.countries||[]).map(x=>x.clicks||x.impr));
+    (g.countries||[]).slice(0,10).forEach(x=>{const v=x.clicks||x.impr,b=el('div','bar');const i=el('i');i.style.width=Math.max(3,v/mx*100)+'%';b.append(el('span','',cn(x.country)),i,el('span','mut',x.clicks+' clicks / '+x.impr+' impr.'));c.append(b)});
+    sec(c,'Top pages');
+    c.append(table(['Page','Clicks','Impr.','Avg pos.'],(g.top_pages||[]).map(x=>[x.url.replace(/^https?:\/\/[^/]+/,'')||'/',String(x.clicks),String(x.impr),String(x.pos)])));
+    sec(c,'Top search queries');
+    c.append(table(['Query','Clicks','Impr.','Avg pos.'],(g.queries||[]).slice(0,12).map(x=>[x.q,String(x.clicks),String(x.impr),String(x.pos)])));
+    if((g.series||[]).length>1){sec(c,'Daily clicks');c.append(line(g.series.map(x=>x.c),g.series.map(x=>x.d),'#b4235a'));sec(c,'Daily impressions');c.append(line(g.series.map(x=>x.i),g.series.map(x=>x.d),'#2b6cb0'))}
+  }else sec(c,'Search Console'),c.append(el('div','empty','Connected nahi hai. README ke Google setup steps karo, phir rankings aur countries yahan aayengi.'));
+
+  sec(c,'What autopilot learned (used for the next posts)');
+  c.append(el('pre','',(p||{}).insights||'Abhi data nahi.'));
+
+  sec(c,'Problems found on the site (latest audit)');
+  const iss=full.issues||[];
+  if(!iss.length)c.append(el('div','ok','No problems found'));
   else{const u=el('ul');iss.forEach(t=>u.append(el('li','bad',t)));c.append(u)}
-  if(days.length>1){
-    const lb=days.map(d=>d.date.slice(5));
-    c.append(el('h3','','Mobile speed score'));c.append(chart(days.map(d=>d.perf??null),lb,'#b4235a',100));
-    c.append(el('h3','','Posts published (last 30 days, rolling)'));c.append(chart(days.map(d=>d.merged_30d??null),lb,'#2b6cb0'));
-  }
+  const withPerf=days.filter(d=>d.perf!=null);
+  if(withPerf.length>1){sec(c,'Mobile speed score over time');c.append(line(withPerf.map(d=>d.perf),withPerf.map(d=>d.date.slice(5)),'#b4235a',100))}
   const nt=last.notes||[];
-  if(nt.length){c.append(el('h3','','Run notes'));const u=el('ul');nt.forEach(t=>u.append(el('li','',t)));c.append(u)}
+  if(nt.length){sec(c,'Run notes');const u=el('ul');nt.forEach(t=>u.append(el('li','',t)));c.append(u)}
   return c;
 }
-fetch('data/history.json?'+Date.now()).then(r=>r.json()).then(h=>{
-  document.getElementById('upd').textContent='Last updated: '+(h.updated||'never');
-  const names=Object.keys(h.sites||{});
-  if(!names.length){app.append(el('div','empty','Abhi koi data nahi. Actions tab mein "Daily autopilot" ko Run workflow karo.'));return}
-  names.forEach(n=>app.append(site(n,h.sites[n])));
-}).catch(()=>{document.getElementById('upd').textContent='';app.append(el('div','empty','Data load nahi hua. Pages setting aur docs/data/history.json check karo.'))});
+Promise.all([j('data/history.json'),j('data/perf.json')]).then(([h,p])=>{
+  document.getElementById('upd').textContent=h.updated?'Last updated: '+h.updated.replace('T',' ').slice(0,16)+' UTC':'';
+  const ns=Object.keys(h.sites||{});
+  if(!ns.length){app.append(el('div','empty','Abhi koi data nahi. Actions tab mein "Autopilot" ko Run workflow karo.'));return}
+  ns.forEach(n=>app.append(site(n,h.sites[n],(p.sites||{})[n])));
+});
 </script>
 </body>
 </html>
