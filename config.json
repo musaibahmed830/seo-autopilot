@@ -1,4 +1,15 @@
 {
+  "regions": [
+    {"code": "PK", "hl": "en-PK", "lang": "en"},
+    {"code": "US", "hl": "en-US", "lang": "en"},
+    {"code": "GB", "hl": "en-GB", "lang": "en"},
+    {"code": "AU", "hl": "en-AU", "lang": "en"},
+    {"code": "CA", "hl": "en-CA", "lang": "en"},
+    {"code": "AE", "hl": "en", "lang": "en"},
+    {"code": "NO", "hl": "no", "lang": "no"},
+    {"code": "TR", "hl": "tr", "lang": "tr"},
+    {"code": "FI", "hl": "fi", "lang": "fi"}
+  ],
   "sites": [
     {
       "name": "StyleVogue",
@@ -7,16 +18,15 @@
       "branch": "main",
       "content_dir": "content/posts",
       "ext": "mdx",
-      "niche": "Pakistani fashion",
-      "queries": [
-        "Pakistani fashion",
-        "Pakistani designer collection",
-        "lawn collection 2026",
-        "Pakistani bridal fashion",
-        "fashion week Pakistan"
-      ],
-      "max_open_prs": 3,
-      "auto_fix": true
+      "gsc_property": "sc-domain:stylevoguefashion.com",
+      "ga4_property_id": "",
+      "ga4_utc_offset": 5,
+      "posts_per_day": 1,
+      "default_peak_hours_utc": [14, 17],
+      "topic_mix": {"fashion": 0.6, "news": 0.4},
+      "news_category": "Trending",
+      "auto_merge_types": [],
+      "max_open_prs": 5
     }
   ]
 }
