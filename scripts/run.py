@@ -1,22 +1,20 @@
-"""SEO autopilot: runs daily in GitHub Actions.
+"""SEO autopilot v2 - runs every hour in GitHub Actions.
 
-For every site in config.json it will:
- 1. audit the live site (title, meta, links, sitemap, speed)
- 2. generate ONE draft post with Gemini (free tier) and open a draft Pull Request
-    in the site's repo (you review + merge = publish)
- 3. count merged / open auto-posts
- 4. save everything to docs/data/history.json (the dashboard reads this file)
+Every run:   checks whether it is time to write a post (best-hour slots) and, if so,
+             finds global trends, picks a topic, researches keywords, writes it with
+             Gemini (free tier) and opens a Pull Request in the site repo.
+First run of the day (or a manual run): also audits the site, runs PageSpeed, pulls
+             Search Console (rankings, countries, queries) and GA4 (best hours), and
+             builds the "what worked / what flopped" feedback used for the next posts.
+Everything is saved in docs/data/*.json for the dashboard.
 """
 import base64
 import datetime
-import html
 import json
 import os
 import pathlib
+import random
 import re
-import shutil
-import subprocess
-import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -26,12 +24,35 @@ from html.parser import HTMLParser
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 CONFIG = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
-HIST = ROOT / "docs" / "data" / "history.json"
+DATA = ROOT / "docs" / "data"
+NOW = datetime.datetime.utcnow()
+TODAY = NOW.date().isoformat()
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 GH_TOKEN = os.environ.get("TARGET_REPO_TOKEN", "")
 PSI_KEY = os.environ.get("PSI_API_KEY", "")
-FALLBACK_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3-flash-preview", "gemini-2.5-flash"]
-TODAY = datetime.date.today().isoformat()
+GOOGLE_SA = os.environ.get("GOOGLE_SA_JSON", "")
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+FORCE = bool(os.environ.get("FORCE_FULL"))  # manual run: full report + post now
+
+SC_SCOPE = "https://www.googleapis.com/auth/webmasters.readonly"
+GA_SCOPE = "https://www.googleapis.com/auth/analytics.readonly"
+
+DEFAULT_REGIONS = [
+    {"code": "PK", "hl": "en-PK", "lang": "en"}, {"code": "US", "hl": "en-US", "lang": "en"},
+    {"code": "GB", "hl": "en-GB", "lang": "en"}, {"code": "AU", "hl": "en-AU", "lang": "en"},
+    {"code": "CA", "hl": "en-CA", "lang": "en"}, {"code": "AE", "hl": "en", "lang": "en"},
+    {"code": "NO", "hl": "no", "lang": "no"}, {"code": "TR", "hl": "tr", "lang": "tr"},
+    {"code": "FI", "hl": "fi", "lang": "fi"},
+]
+A3 = {"pak": "PK", "usa": "US", "gbr": "GB", "aus": "AU", "nor": "NO", "tur": "TR", "fin": "FI",
+      "are": "AE", "can": "CA", "ind": "IN", "deu": "DE", "fra": "FR", "sau": "SA", "bgd": "BD",
+      "idn": "ID", "mys": "MY", "sgp": "SG", "zaf": "ZA", "nga": "NG", "egy": "EG", "phl": "PH",
+      "nzl": "NZ", "irl": "IE", "swe": "SE", "dnk": "DK", "nld": "NL", "ita": "IT", "esp": "ES",
+      "bra": "BR", "mex": "MX", "jpn": "JP", "kor": "KR", "qat": "QA", "kwt": "KW", "omn": "OM",
+      "bhr": "BH", "lka": "LK", "npl": "NP", "afg": "AF", "rus": "RU", "pol": "PL"}
+
+SAFE = ("Skip tragedies, deaths, disasters, wars, crime, partisan politics, medical or legal advice "
+        "and anything about private individuals. Never state unverified claims as facts.")
 
 
 # ---------- helpers ----------
@@ -49,6 +70,18 @@ def http(url, data=None, headers=None, method=None, timeout=60):
         return 0, str(e).encode(), time.time() - t
 
 
+def jload(path, default):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+
+def jsave(path, obj):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(obj, indent=1, ensure_ascii=False), encoding="utf-8")
+
+
 def norm_repo(r):
     r = r.strip()
     for p in ("https://github.com/", "http://github.com/"):
@@ -59,11 +92,8 @@ def norm_repo(r):
 
 
 def gh(path, method="GET", payload=None):
-    h = {
-        "Authorization": "Bearer " + GH_TOKEN,
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
+    h = {"Authorization": "Bearer " + GH_TOKEN, "Accept": "application/vnd.github+json",
+         "X-GitHub-Api-Version": "2022-11-28"}
     data = None
     if payload is not None:
         data = json.dumps(payload).encode()
@@ -75,7 +105,7 @@ def gh(path, method="GET", payload=None):
         return code, None
 
 
-# ---------- 1. site audit ----------
+# ---------- site audit ----------
 class Page(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -138,7 +168,6 @@ def audit(site):
     dead = sum(1 for h in p.links if h in ("#", ""))
     if dead:
         issues.append(f"{dead} links on homepage point to '#' (empty links)")
-
     host = urllib.parse.urlparse(site).netloc
     seen, sample = set(), []
     for h in p.links:
@@ -146,7 +175,6 @@ def audit(site):
         if urllib.parse.urlparse(u).netloc == host and u not in seen and u != site + "/":
             seen.add(u)
             sample.append(u)
-    raw_urls = []
     broken = []
     for u in sample[:25]:
         c = http(u, timeout=30)[0]
@@ -156,7 +184,6 @@ def audit(site):
     m["links_broken"] = len(broken)
     if broken:
         issues.append(f"{len(broken)} broken internal links, e.g. {broken[0]}")
-
     if http(site + "/robots.txt")[0] != 200:
         issues.append("robots.txt not found")
     code, sm, _ = http(site + "/sitemap.xml")
@@ -165,10 +192,9 @@ def audit(site):
     else:
         try:
             root = ET.fromstring(sm)
-            locs = [e for e in root.iter() if e.tag.endswith("}loc") or e.tag == "loc"]
-            mods = [e.text[:10] for e in root.iter() if (e.tag.endswith("}lastmod") or e.tag == "lastmod") and e.text]
+            locs = [e for e in root.iter() if e.tag.endswith("loc")]
+            mods = [e.text[:10] for e in root.iter() if e.tag.endswith("lastmod") and e.text]
             m["sitemap_urls"] = len(locs)
-            raw_urls = [e.text.strip() for e in locs if e.text][:80]
             if mods:
                 newest = max(mods)
                 m["sitemap_newest"] = newest
@@ -177,162 +203,278 @@ def audit(site):
                     issues.append(f"Newest sitemap entry is {age} days old (site looks inactive)")
         except Exception:
             issues.append("sitemap.xml could not be parsed")
-    raw = {"desc": p.desc, "title": t, "hash_links": dead, "urls": raw_urls + sample[:40]}
-    return {"issues": issues, "metrics": m, "raw": raw}
+    return {"issues": issues, "metrics": m}
 
 
 def psi(url):
-    qs = urllib.parse.urlencode(
-        {"url": url, "strategy": "mobile", "category": ["performance", "seo"]}, doseq=True)
+    qs = urllib.parse.urlencode({"url": url, "strategy": "mobile", "category": ["performance", "seo"]}, doseq=True)
     if PSI_KEY:
         qs += "&key=" + PSI_KEY
     code, body, _ = http("https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + qs, timeout=120)
     if code != 200:
         return {}
     j = json.loads(body)["lighthouseResult"]
-    return {
-        "perf": round(j["categories"]["performance"]["score"] * 100),
-        "seo": round(j["categories"]["seo"]["score"] * 100),
-        "lcp": j["audits"]["largest-contentful-paint"]["displayValue"],
-    }
+    return {"perf": round(j["categories"]["performance"]["score"] * 100),
+            "seo": round(j["categories"]["seo"]["score"] * 100),
+            "lcp": j["audits"]["largest-contentful-paint"]["displayValue"]}
 
 
-# ---------- 2. post generation ----------
-def headlines(queries):
-    out, seen = [], set()
-    for q in queries:
-        url = ("https://news.google.com/rss/search?q=" + urllib.parse.quote(q + " when:7d")
-               + "&hl=en-PK&gl=PK&ceid=PK:en")
-        code, body, _ = http(url)
-        if code != 200:
-            continue
-        try:
-            items = list(ET.fromstring(body).iter("item"))[:8]
-        except Exception:
-            continue
-        for it in items:
-            t = (it.findtext("title") or "").strip()
-            if t and t.lower() not in seen:
-                seen.add(t.lower())
-                out.append(t)
-    return out[:30]
+# ---------- Google Search Console + GA4 ----------
+_sess = {}
 
 
-def discover_models():
-    """Ask Google which flash models this key can use, newest first."""
-    code, body, _ = http("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
-                         headers={"x-goog-api-key": GEMINI_KEY}, timeout=30)
+def gsess(scope):
+    if scope not in _sess:
+        from google.auth.transport.requests import AuthorizedSession
+        from google.oauth2 import service_account
+        creds = service_account.Credentials.from_service_account_info(json.loads(GOOGLE_SA), scopes=[scope])
+        _sess[scope] = AuthorizedSession(creds)
+    return _sess[scope]
+
+
+def gsc_rows(prop, dims, start, end, limit):
+    url = ("https://www.googleapis.com/webmasters/v3/sites/" + urllib.parse.quote(prop, safe="")
+           + "/searchAnalytics/query")
+    r = gsess(SC_SCOPE).post(url, json={"startDate": start, "endDate": end, "dimensions": dims,
+                                        "rowLimit": limit}, timeout=60)
+    if r.status_code != 200:
+        raise RuntimeError(f"Search Console HTTP {r.status_code}: check gsc_property in config.json and that "
+                           "the service account email is added as a user in Search Console")
+    return r.json().get("rows", [])
+
+
+def gsc_pull(prop):
+    end = datetime.date.today() - datetime.timedelta(days=3)  # GSC data lags ~2-3 days
+    start = end - datetime.timedelta(days=27)
+    st, en = start.isoformat(), end.isoformat()
+    pages = [{"url": r["keys"][0], "clicks": int(r["clicks"]), "impr": int(r["impressions"]),
+              "pos": round(r["position"], 1)} for r in gsc_rows(prop, ["page"], st, en, 1000)]
+    ctry = [{"country": A3.get(r["keys"][0], r["keys"][0].upper()), "clicks": int(r["clicks"]),
+             "impr": int(r["impressions"])} for r in gsc_rows(prop, ["country"], st, en, 15)]
+    qs = [{"q": r["keys"][0], "clicks": int(r["clicks"]), "impr": int(r["impressions"]),
+           "pos": round(r["position"], 1)} for r in gsc_rows(prop, ["query"], st, en, 25)]
+    ser = [{"d": r["keys"][0][5:], "c": int(r["clicks"]), "i": int(r["impressions"])}
+           for r in sorted(gsc_rows(prop, ["date"], st, en, 40), key=lambda r: r["keys"][0])]
+    return {"ok": True, "range": [st, en], "clicks": sum(p["clicks"] for p in pages),
+            "impr": sum(p["impr"] for p in pages), "series": ser, "countries": ctry, "queries": qs,
+            "top_pages": sorted(pages, key=lambda p: (-p["clicks"], -p["impr"]))[:12]}, pages
+
+
+def ga4_hours(pid, offset):
+    """Page views by hour of day, converted to UTC (GA4 reports in the property's time zone)."""
+    r = gsess(GA_SCOPE).post(f"https://analyticsdata.googleapis.com/v1beta/properties/{pid}:runReport", json={
+        "dateRanges": [{"startDate": "28daysAgo", "endDate": "yesterday"}],
+        "dimensions": [{"name": "hour"}], "metrics": [{"name": "screenPageViews"}]}, timeout=60)
+    if r.status_code != 200:
+        raise RuntimeError(f"GA4 HTTP {r.status_code}: check ga4_property_id and Viewer access")
+    hrs = [0] * 24
+    for row in r.json().get("rows", []):
+        hrs[(int(row["dimensionValues"][0]["value"]) - offset) % 24] += int(row["metricValues"][0]["value"])
+    return hrs
+
+
+def make_slots(hours, n, default_peaks):
+    """Post 2 hours before each peak-traffic hour (time to review, crawl and share)."""
+    if hours and sum(hours) >= 50:
+        peaks = sorted(range(24), key=lambda h: -hours[h])[:n]
+    else:
+        peaks = list(default_peaks)[:n]
+    while len(peaks) < n:
+        peaks.append((peaks[-1] + 3) % 24)
+    return sorted((h - 2) % 24 for h in peaks), peaks
+
+
+def rank_label(impr, pos, age):
+    if not impr:
+        return "Too new" if age < 7 else "Not ranking / not indexed"
+    return "Page 1" if pos <= 10 else "Page 2" if pos <= 20 else "Weak (page 3+)"
+
+
+def match_posts(site_posts, pages):
+    out = []
+    for p in site_posts:
+        rows = [g for g in pages if p["slug"] in g["url"]]
+        impr = sum(g["impr"] for g in rows)
+        clicks = sum(g["clicks"] for g in rows)
+        pos = sum(g["pos"] * g["impr"] for g in rows) / impr if impr else None
+        age = (datetime.date.today() - datetime.date.fromisoformat(p["date"])).days
+        out.append({**p, "clicks": clicks, "impr": impr, "pos": round(pos, 1) if pos else None,
+                    "age": age, "rank": rank_label(impr, pos, age)})
+    return out
+
+
+def make_insights(pp, gsc):
+    """Plain-text feedback fed back into the next topic choice (the learning loop)."""
+    L = []
+    if gsc and gsc.get("countries"):
+        L.append("Audience countries (28d clicks): " + ", ".join(f"{c['country']} {c['clicks']}" for c in gsc["countries"][:6]))
+    mature = [p for p in pp if p["age"] >= 7]
+    if mature:
+        top = sorted(mature, key=lambda p: (-p["impr"], -p["clicks"]))[:3]
+        low = sorted(mature, key=lambda p: (p["impr"], p["clicks"]))[:3]
+        fmt = lambda p: f'"{p["title"]}" ({p["type"]}, {p["region"]}, {p["impr"]} impressions, {p["clicks"]} clicks)'
+        L.append("Best posts: " + "; ".join(fmt(p) for p in top))
+        L.append("Weakest posts (avoid similar topics): " + "; ".join(fmt(p) for p in low))
+        for key in ("type", "region"):
+            g = {}
+            for p in mature:
+                g.setdefault(p[key], []).append(p["impr"])
+            L.append(f"Average impressions by {key}: " + ", ".join(
+                f"{k} {round(sum(v) / len(v))}" for k, v in sorted(g.items(), key=lambda kv: -sum(kv[1]) / len(kv[1]))))
+    if gsc and gsc.get("queries"):
+        L.append("Top search queries now: " + ", ".join(q["q"] for q in gsc["queries"][:8]))
+    return "\n".join(L) or "Not enough data yet. Explore varied topics."
+
+
+# ---------- trends + keywords ----------
+def rss_items(url):
+    code, body, _ = http(url)
     if code != 200:
         return []
-    bad = ("image", "tts", "live", "audio", "embed", "native", "robotics", "computer", "thinking", "vision")
-    found = []
-    for m in json.loads(body).get("models", []):
-        name = m.get("name", "").replace("models/", "")
-        if "flash" not in name or any(x in name for x in bad):
-            continue
-        if "generateContent" not in m.get("supportedGenerationMethods", []):
-            continue
-        v = re.search(r"gemini-(\d+(?:\.\d+)?)", name)
-        ver = float(v.group(1)) if v else 0
-        stable = 0 if ("preview" in name or "exp" in name) else 1
-        lite = 0 if "lite" in name else 1
-        found.append((ver, stable, lite, name))
-    found.sort(reverse=True)
-    return [f[3] for f in found[:4]]
+    try:
+        return list(ET.fromstring(body).iter("item"))
+    except Exception:
+        return []
 
 
-def gemini(prompt):
-    body = json.dumps({
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"responseMimeType": "application/json", "temperature": 0.8},
-    }).encode()
-    hdr = {"Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY}
-    models = []
-    for m in [os.environ.get("GEMINI_MODEL")] + discover_models() + FALLBACK_MODELS:
-        if m and m not in models:
-            models.append(m)
-    errors = []
-    for model in models[:6]:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-        for attempt in range(3):
-            code, resp, _ = http(url, body, hdr, timeout=120)
-            if code == 200:
-                try:
-                    return json.loads(json.loads(resp)["candidates"][0]["content"]["parts"][0]["text"])
-                except Exception:
-                    errors.append(f"{model}: reply was not valid JSON")
-                    break
+def child(it, name):
+    for e in it:
+        if e.tag.endswith(name):
+            return (e.text or "").strip()
+    return ""
+
+
+def collect_trends(regions):
+    T, N, F = [], [], []
+    for r in regions:
+        cc, hl, lang = r["code"], r["hl"], r["lang"]
+        for it in rss_items(f"https://trends.google.com/trending/rss?geo={cc}")[:8]:
+            t = (it.findtext("title") or "").strip()
+            if t:
+                T.append(f"[{cc}] {t} (searches: {child(it, 'approx_traffic') or '?'})")
+        q = f"hl={hl}&gl={cc}&ceid={cc}:{lang}"
+        for it in rss_items("https://news.google.com/rss?" + q)[:5]:
+            N.append(f"[{cc}] {(it.findtext('title') or '').strip()}")
+        for it in rss_items("https://news.google.com/rss/search?q=fashion+when:3d&" + q)[:4]:
+            F.append(f"[{cc}] {(it.findtext('title') or '').strip()}")
+    return T, N, F
+
+
+def autocomplete(seed, cc="US"):
+    out = []
+    for suffix in ("", " best", " how to", f" {NOW.year}"):
+        code, body, _ = http("https://suggestqueries.google.com/complete/search?client=firefox&hl=en&gl="
+                             + cc.lower() + "&q=" + urllib.parse.quote(seed + suffix), timeout=20)
+        if code == 200:
             try:
-                msg = json.loads(resp)["error"]["message"][:90]
+                out += json.loads(body.decode("utf-8", "ignore"))[1]
             except Exception:
-                msg = resp[:90].decode("utf-8", "ignore")
-            errors.append(f"{model} HTTP {code}: {msg}")
-            if code == 429:
-                time.sleep(30 * (attempt + 1))  # free tier limit: wait and retry
-                continue
-            break  # 400/403/404: try the next model
-    raise RuntimeError("Gemini failed - " + " | ".join(errors)[:600])
+                pass
+    return list(dict.fromkeys(out))[:14]
 
 
-def build_prompt(niche, heads, slugs):
+# ---------- writing ----------
+def gemini(prompt):
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
+    body = json.dumps({"contents": [{"parts": [{"text": prompt}]}],
+                       "generationConfig": {"responseMimeType": "application/json", "temperature": 0.8}}).encode()
+    hdr = {"Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY}
+    for attempt in range(4):
+        code, resp, _ = http(url, body, hdr, timeout=120)
+        if code == 200:
+            try:
+                return json.loads(json.loads(resp)["candidates"][0]["content"]["parts"][0]["text"])
+            except Exception:
+                pass
+        time.sleep(20 * (attempt + 1))  # free tier: back off on 429
+    raise RuntimeError("Gemini failed after retries (limit reached or bad key)")
+
+
+def pick_topic(ptype, trends, news, fash, insights, slugs):
     nl = "\n"
-    return f"""You are an editor for a fashion blog focused on: {niche}.
-Today's date: {TODAY}.
+    if ptype == "fashion":
+        pool = fash[:30] + trends[:40]
+        rule = ("Prefer fashion, style, beauty and accessory topics. If a general trend (event, festival, season, "
+                "celebrity look) has a fashion angle, use that angle.")
+    else:
+        pool = trends[:50] + news[:40]
+        rule = ("Prefer entertainment, tech, sports, culture, lifestyle and business stories many people are "
+                "searching for. Write it as a clear explainer.")
+    prompt = f"""You are the editorial strategist of a global English-language fashion and trends website.
+Today: {TODAY}. Content type to write now: {ptype}. {rule}
 
-Recent headlines (last 7 days):
-{nl.join('- ' + h for h in heads)}
+LIVE TRENDS AND HEADLINES (country code in brackets):
+{nl.join(pool)}
 
-Slugs already published (do NOT repeat these topics):
+PERFORMANCE FEEDBACK FROM OUR OWN DATA (learn from it):
+{insights}
+
+ALREADY PUBLISHED slugs (do not repeat):
 {nl.join('- ' + s for s in slugs[-80:])}
 
-Pick ONE topic people are searching for right now and write an original, helpful
-article of 900-1200 words in Markdown.
+Pick ONE topic with high search demand and viral potential for an international audience
+(US, UK, Australia, Canada, Norway, Turkey, Finland, UAE, Pakistan). {SAFE}
+Return JSON: type, region (2-letter code of the main angle or GLOBAL), topic (short), seed_keyword (2-4 words
+people would search), angle (one sentence)."""
+    return gemini(prompt)
+
+
+def write_article(topic, kws, ptype, ctx):
+    nl = "\n"
+    shape = ("Sections: What happened, Why it matters, What to know, FAQ." if ptype == "news"
+             else "Include practical styling tips and a short FAQ.")
+    prompt = f"""Write an original, helpful article of 900-1300 words in Markdown for a global English-language website.
+Topic: {topic.get('topic')}. Angle: {topic.get('angle')}. Main region: {topic.get('region')}.
+Primary keyword: {topic.get('seed_keyword')}. Weave in these related search phrases naturally (only where they fit):
+{', '.join(kws)}
+
+Source headlines (the ONLY facts you may rely on, plus very general well-known knowledge):
+{nl.join(ctx[:80])}
+
 Rules:
-- Use only facts supported by the headlines above or very general, well-known knowledge.
-  Do NOT invent quotes, prices, statistics, dates or brand claims. If unsure, stay general.
-- Short intro, H2/H3 headings, practical styling tips, and a short FAQ (3 questions).
-- No H1 in the body (title is separate). No filler. Natural, human tone.
-Return JSON with keys: title (max 60 chars), slug (kebab-case), description (max 155 chars),
-category (one of: Trending, Style Tips, Accessories, Wardrobe Essentials, Sustainable),
-body (Markdown string)."""
+- Do NOT invent quotes, numbers, prices, dates or claims. If unsure, stay general. Say "according to media reports" when needed.
+- {SAFE}
+- Use H2/H3 headings, short intro, no H1, no filler, natural human tone. {shape}
+Return JSON with keys: title (max 60 chars, includes the primary keyword), slug (kebab-case), description (max 155 chars),
+category (one of: Trending, Style Tips, Accessories, Wardrobe Essentials, Sustainable), tags (list of 3-6), body (Markdown)."""
+    return gemini(prompt)
 
 
-def render(post):
-    return "\n".join([
-        "---",
-        f"title: {json.dumps(post['title'])}",
-        f"description: {json.dumps(post['description'])}",
-        f"category: {json.dumps(post['category'])}",
-        f"date: {json.dumps(TODAY)}",
-        "---",
-        "",
-        post["body"].strip(),
-        "",
-    ])
+def render(post, kw):
+    return "\n".join(["---", f"title: {json.dumps(post['title'])}", f"description: {json.dumps(post['description'])}",
+                      f"category: {json.dumps(post['category'])}", f"tags: {json.dumps(post.get('tags', []))}",
+                      f"keyword: {json.dumps(kw)}", f"date: {json.dumps(TODAY)}", "---", "",
+                      post["body"].strip(), ""])
 
 
-def make_post(s, repo):
-    branch = s.get("branch", "main")
+def make_post(s, repo, insights, regions):
+    branch, ext = s.get("branch", "main"), s.get("ext", "mdx")
     cdir = s.get("content_dir", "content/posts").strip("/")
-    ext = s.get("ext", "mdx")
     code, prs = gh(f"/repos/{repo}/pulls?state=open&per_page=100")
     if code != 200:
         raise RuntimeError(f"cannot read pull requests of {repo} (HTTP {code}); check the token's access")
-    open_auto = [x for x in prs if x["head"]["ref"].startswith("auto/post-")]
-    if len(open_auto) >= int(s.get("max_open_prs", 3)):
-        return None, f"Skipped new post: {len(open_auto)} drafts are waiting for your review"
+    waiting = [x for x in prs if x["head"]["ref"].startswith("auto/post-")]
+    if len(waiting) >= int(s.get("max_open_prs", 5)):
+        return None, f"Skipped new post: {len(waiting)} drafts are waiting for your review"
     code, files = gh(f"/repos/{repo}/contents/{cdir}?ref={branch}")
     slugs = [f["name"].rsplit(".", 1)[0] for f in files] if code == 200 and isinstance(files, list) else []
-    heads = headlines(s.get("queries") or [s.get("niche", "fashion")])
-    if not heads:
-        raise RuntimeError("no trending headlines fetched")
-    post = gemini(build_prompt(s.get("niche", "fashion"), heads, slugs))
+    mix = s.get("topic_mix", {"fashion": 0.6, "news": 0.4})
+    ptype = random.choices(list(mix), weights=list(mix.values()))[0]
+    trends, news, fash = collect_trends(regions)
+    if not (trends or news or fash):
+        raise RuntimeError("no trending data fetched")
+    topic = pick_topic(ptype, trends, news, fash, insights, slugs)
+    seed = topic.get("seed_keyword") or topic.get("topic", "fashion")
+    reg = str(topic.get("region") or "").upper()
+    cc = reg if len(reg) == 2 and reg.isalpha() else "US"
+    post = write_article(topic, autocomplete(seed, cc), ptype, trends + news + fash)
     if len(post.get("body", "").split()) < 600:
         raise RuntimeError("generated post too short, not saved")
     slug = re.sub(r"[^a-z0-9-]+", "-", post["slug"].lower()).strip("-")[:70]
     if slug in slugs:
         raise RuntimeError("slug already exists, not saved")
-    path = f"{cdir}/{slug}.{ext}"
+    if ptype == "news":
+        post["category"] = s.get("news_category", post["category"])
     code, ref = gh(f"/repos/{repo}/git/ref/heads/{branch}")
     if code != 200:
         raise RuntimeError(f"cannot read branch {branch} (HTTP {code})")
@@ -340,284 +482,131 @@ def make_post(s, repo):
     code, _ = gh(f"/repos/{repo}/git/refs", "POST", {"ref": "refs/heads/" + bname, "sha": ref["object"]["sha"]})
     if code not in (200, 201):
         raise RuntimeError(f"cannot create branch (HTTP {code}); token needs Contents: write")
-    code, _ = gh(f"/repos/{repo}/contents/{path}", "PUT", {
-        "message": f"Add draft post: {post['title']}",
-        "content": base64.b64encode(render(post).encode()).decode(),
-        "branch": bname,
-    })
+    code, _ = gh(f"/repos/{repo}/contents/{cdir}/{slug}.{ext}", "PUT", {
+        "message": f"Add post: {post['title']}",
+        "content": base64.b64encode(render(post, seed).encode()).decode(), "branch": bname})
     if code not in (200, 201):
         raise RuntimeError(f"cannot write post file (HTTP {code})")
-    pr = {"title": f"Draft post: {post['title']}", "head": bname, "base": branch,
-          "body": "Auto-generated draft. Read it, fix any wrong facts, then merge to publish.", "draft": True}
+    auto = ptype in s.get("auto_merge_types", [])
+    pr = {"title": f"{'Post' if auto else 'Draft post'}: {post['title']}", "head": bname, "base": branch,
+          "body": f"Type: {ptype} | Region: {topic.get('region')} | Keyword: {seed}\n\n"
+                  "Auto-generated. Check facts before merging.", "draft": not auto}
     code, res = gh(f"/repos/{repo}/pulls", "POST", pr)
-    if code == 422:  # drafts not allowed on some private repos
+    if code == 422 and pr.get("draft"):  # drafts are not allowed on some private repos
         pr.pop("draft")
         code, res = gh(f"/repos/{repo}/pulls", "POST", pr)
     if code not in (200, 201):
         raise RuntimeError(f"cannot open pull request (HTTP {code})")
-    return res["html_url"], "Draft post created"
+    merged = False
+    if auto:
+        merged = gh(f"/repos/{repo}/pulls/{res['number']}/merge", "PUT", {"merge_method": "squash"})[0] == 200
+    meta = {"slug": slug, "title": post["title"], "date": TODAY, "type": ptype,
+            "region": topic.get("region", "GLOBAL"), "keyword": seed, "pr": res["html_url"], "auto_merged": merged}
+    return meta, ("Post published automatically" if merged else "Draft post created")
 
 
-# ---------- 3. progress counts ----------
 def pr_stats(repo):
     code, prs = gh(f"/repos/{repo}/pulls?state=all&per_page=100")
     if code != 200 or not isinstance(prs, list):
         return {}
     auto = [x for x in prs if x["head"]["ref"].startswith("auto/post-")]
-    cutoff = (datetime.datetime.utcnow() - datetime.timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    cutoff = (NOW - datetime.timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
     merged = [x for x in auto if x.get("merged_at")]
-    return {
-        "drafts_open": sum(1 for x in auto if x["state"] == "open"),
-        "merged_total": len(merged),
-        "merged_30d": sum(1 for x in merged if x["merged_at"] >= cutoff),
-    }
-
-
-# ---------- 4. auto-fix (opens a Pull Request; you review + merge) ----------
-SRC_EXT = (".tsx", ".jsx", ".ts", ".js", ".mjs", ".html", ".astro", ".vue", ".svelte", ".php")
-SKIP_DIRS = {"node_modules", ".git", ".next", "dist", "build", "out", ".vercel", ".astro", ".github"}
-HASH_RE = re.compile(r"""(\bhref\s*[:=]\s*\{?\s*)(["'])#\2""")
-TRANSFORMS = [
-    lambda s: s,
-    lambda s: html.escape(s, quote=False),
-    lambda s: s.replace("'", "\\'"),
-    lambda s: s.replace('"', '\\"'),
-]
-
-
-def git(args, cwd=None, auth=True):
-    cmd = ["git"]
-    b64 = base64.b64encode(("x-access-token:" + GH_TOKEN).encode()).decode()
-    if auth:
-        cmd += ["-c", "http.https://github.com/.extraheader=AUTHORIZATION: basic " + b64]
-    cmd += ["-c", "user.name=autopilot[bot]", "-c", "user.email=autopilot@users.noreply.github.com"] + args
-    r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=300)
-    if r.returncode != 0:
-        err = (r.stderr or "")[-300:].replace(GH_TOKEN, "***").replace(b64, "***")
-        raise RuntimeError(f"git {args[0]} failed: {err}")
-    return r.stdout
-
-
-def source_files(dest, content_dir):
-    skip_content = (dest / content_dir.strip("/")).resolve()
-    out = []
-    for p in dest.rglob("*"):
-        if not p.is_file() or p.suffix not in SRC_EXT:
-            continue
-        rel = p.relative_to(dest)
-        if any(part in SKIP_DIRS for part in rel.parts):
-            continue
-        if skip_content in p.resolve().parents:
-            continue
-        try:
-            if p.stat().st_size > 300_000:
-                continue
-        except OSError:
-            continue
-        out.append(p)
-    return out
-
-
-def fix_meta(dest, files, desc, title, niche):
-    found = []
-    for f in files:
-        txt = f.read_text(encoding="utf-8", errors="ignore")
-        for i, t in enumerate(TRANSFORMS):
-            v = t(desc)
-            if v in txt:
-                found.append((f, i, txt.count(v)))
-                break
-    if not found:
-        return [], f"Meta description ({len(desc)} chars) text not found in the source code; shorten it by hand"
-    if sum(c for _, _, c in found) > 4:
-        return [], "Meta description text appears in too many places; shorten it by hand"
-    res = gemini(
-        f"Rewrite this website meta description so it is between 120 and 155 characters.\n"
-        f"Keep the meaning and the main keywords. Niche: {niche}. Page title: {title}.\n"
-        f"Do not use double quotes, backslashes, backticks or angle brackets.\n"
-        f"Current ({len(desc)} chars): {desc}\n"
-        f'Return JSON: {{"description": "..."}}')
-    new = (res.get("description") if isinstance(res, dict) else "") or ""
-    new = new.strip()
-    if not 70 <= len(new) <= 160 or any(ch in new for ch in '"\\`<>') or "${" in new:
-        return [], "Gemini gave an unusable meta description; skipped"
-    changes = []
-    for f, i, _ in found:
-        txt = f.read_text(encoding="utf-8", errors="ignore")
-        f.write_text(txt.replace(TRANSFORMS[i](desc), TRANSFORMS[i](new)), encoding="utf-8")
-        changes.append(f"Meta description in `{f.relative_to(dest)}`: {len(desc)} -> {len(new)} characters\n"
-                       f"  - old: {desc}\n  - new: {new}")
-    return changes, None
-
-
-def fix_hash_links(dest, files, urls):
-    allowed = []
-    for u in urls:
-        path = urllib.parse.urlparse(u).path or "/"
-        if path not in allowed:
-            allowed.append(path)
-    allowed = allowed[:80]
-    occ = []
-    for f in files:
-        txt = f.read_text(encoding="utf-8", errors="ignore")
-        lines = txt.split("\n")
-        for m in HASH_RE.finditer(txt):
-            ln = txt.count("\n", 0, m.start())
-            ctx = "\n".join(lines[max(0, ln - 3): ln + 4])[:600]
-            occ.append({"id": len(occ), "file": f, "idx": m.end() - 2, "line": ln + 1, "context": ctx})
-            if len(occ) >= 12:
-                break
-        if len(occ) >= 12:
-            break
-    if not occ:
-        return [], ["Empty '#' links were not found in the source code; check them by hand"]
-    items = [{"id": o["id"], "file": str(o["file"].relative_to(dest)), "line": o["line"], "code": o["context"]} for o in occ]
-    res = gemini(
-        "Each item below is a link in a website's source code whose href is just \"#\".\n"
-        "For each, decide if it is meant to open a page of this site.\n"
-        "- action \"replace\": ONLY if the link label/context clearly matches one page, and href is copied EXACTLY\n"
-        "  from the allowed list. Never invent a URL.\n"
-        "- action \"keep\": for dropdown toggles, buttons, scroll-to-top, social icons, or when unsure.\n"
-        f"Allowed hrefs: {json.dumps(allowed)}\n"
-        f"Items: {json.dumps(items)}\n"
-        'Return JSON list: [{"id": 0, "action": "replace" or "keep", "href": "/path or empty", "reason": "short"}]')
-    decisions = res if isinstance(res, list) else (res.get("items") if isinstance(res, dict) else [])
-    by_file, changes, manual = {}, [], []
-    for d in decisions or []:
-        try:
-            o = occ[int(d["id"])]
-        except Exception:
-            continue
-        if d.get("action") == "replace" and d.get("href") in allowed:
-            by_file.setdefault(o["file"], []).append((o["idx"], d["href"], o))
-        else:
-            manual.append(f"`{o['file'].relative_to(dest)}` line {o['line']}: left as '#' ({d.get('reason') or 'needs your decision'})")
-    for f, reps in by_file.items():
-        txt = f.read_text(encoding="utf-8", errors="ignore")
-        for idx, href, o in sorted(reps, key=lambda r: r[0], reverse=True):
-            if txt[idx] == "#":
-                txt = txt[:idx] + href + txt[idx + 1:]
-                changes.append(f"`{f.relative_to(dest)}` line {o['line']}: href '#' -> '{href}'")
-        f.write_text(txt, encoding="utf-8")
-    decided = {int(d["id"]) for d in decisions or [] if isinstance(d, dict) and str(d.get("id", "")).isdigit()}
-    for o in occ:
-        if o["id"] not in decided:
-            manual.append(f"`{o['file'].relative_to(dest)}` line {o['line']}: left as '#' (not decided)")
-    return changes, manual
-
-
-def fix_site(s, repo, raw):
-    if s.get("auto_fix", True) is False:
-        return None, []
-    desc = raw.get("desc") or ""
-    need_meta = bool(desc) and not 70 <= len(desc) <= 160
-    need_hash = raw.get("hash_links", 0) > 0
-    if not (need_meta or need_hash):
-        return None, []
-    branch = s.get("branch", "main")
-    code, prs = gh(f"/repos/{repo}/pulls?state=open&per_page=100")
-    if code != 200:
-        raise RuntimeError(f"cannot read pull requests (HTTP {code})")
-    if any(x["head"]["ref"].startswith("auto/fix-") for x in prs):
-        return None, ["Auto-fix skipped: a fix Pull Request is already waiting for your review"]
-    tmp = tempfile.mkdtemp()
-    try:
-        dest = pathlib.Path(tmp) / "repo"
-        git(["clone", "--depth", "1", "--branch", branch, f"https://github.com/{repo}.git", str(dest)])
-        files = source_files(dest, s.get("content_dir", "content/posts"))
-        changes, notes = [], []
-        if need_meta:
-            try:
-                c, why = fix_meta(dest, files, desc, raw.get("title", ""), s.get("niche", ""))
-                changes += c
-                if why:
-                    notes.append(why)
-            except Exception as e:
-                notes.append(f"Meta fix failed: {e}")
-        if need_hash:
-            try:
-                c, m = fix_hash_links(dest, files, raw.get("urls", []))
-                changes += c
-                notes += m
-            except Exception as e:
-                notes.append(f"Link fix failed: {e}")
-        if not changes:
-            return None, ["Auto-fix: no safe change could be made"] + notes
-        bname = f"auto/fix-{TODAY}"
-        git(["checkout", "-b", bname], cwd=dest, auth=False)
-        git(["add", "-A"], cwd=dest, auth=False)
-        git(["commit", "-m", "Auto-fix SEO issues found by audit"], cwd=dest, auth=False)
-        git(["push", "origin", bname], cwd=dest)
-        body = "Auto-generated SEO fixes. Check the changed files, then merge.\n\n## Changes\n"
-        body += "\n".join("- " + c for c in changes)
-        if notes:
-            body += "\n\n## Needs your decision (not changed)\n" + "\n".join("- " + n for n in notes)
-        pr = {"title": "SEO fixes: meta description and empty links", "head": bname, "base": branch,
-              "body": body, "draft": True}
-        code, res = gh(f"/repos/{repo}/pulls", "POST", pr)
-        if code == 422:
-            pr.pop("draft")
-            code, res = gh(f"/repos/{repo}/pulls", "POST", pr)
-        if code not in (200, 201):
-            raise RuntimeError(f"cannot open fix pull request (HTTP {code})")
-        return res["html_url"], [f"Auto-fix PR created ({len(changes)} change(s))"] + notes
-    finally:
-        shutil.rmtree(tmp, ignore_errors=True)
+    return {"drafts_open": sum(1 for x in auto if x["state"] == "open"), "merged_total": len(merged),
+            "merged_30d": sum(1 for x in merged if x["merged_at"] >= cutoff)}
 
 
 # ---------- main ----------
 def main():
-    hist = {"sites": {}}
-    if HIST.exists():
-        try:
-            hist = json.loads(HIST.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+    hist = jload(DATA / "history.json", {"sites": {}})
+    perf = jload(DATA / "perf.json", {"sites": {}})
+    posts = jload(DATA / "posts.json", [])
+    regions = CONFIG.get("regions") or DEFAULT_REGIONS
+    dirty = False
     for s in CONFIG["sites"]:
         name, repo, site = s["name"], norm_repo(s["repo"]), s["site"].rstrip("/")
-        rec, notes, raw = {"date": TODAY}, [], {}
-        try:
-            a = audit(site)
-            raw = a.get("raw", {})
-            rec.update(a["metrics"])
-            rec["issues"] = a["issues"]
-        except Exception as e:
-            rec["issues"] = []
-            notes.append(f"Audit failed: {type(e).__name__}")
-        try:
-            rec.update(psi(site))
-        except Exception as e:
-            notes.append(f"PageSpeed failed: {type(e).__name__}")
-        if GH_TOKEN and GEMINI_KEY:
+        sh = hist["sites"].setdefault(name, {"days": []})
+        sh.update({"repo": repo, "site": site})
+        rec = next((d for d in sh["days"] if d["date"] == TODAY), None)
+        full = FORCE or rec is None
+        if rec is None:
+            rec = {"date": TODAY}
+            sh["days"].append(rec)
+        sh["days"] = sh["days"][-120:]
+        notes = [] if full else rec.get("notes", [])
+        sp = perf["sites"].setdefault(name, {})
+        mine = [p for p in posts if p["site"] == name]
+        ppd = int(s.get("posts_per_day", 1))
+
+        if full:
+            dirty = True
             try:
-                url, msg = make_post(s, repo)
-                notes.append(msg)
-                if url:
-                    rec["pr_url"] = url
+                a = audit(site)
+                rec.update(a["metrics"])
+                rec["issues"] = a["issues"]
             except Exception as e:
-                notes.append(f"Post step failed: {e}")
+                rec["issues"] = []
+                notes.append(f"Audit failed: {type(e).__name__}")
             try:
-                fix_url, fix_msgs = fix_site(s, repo, raw)
-                notes += fix_msgs
-                if fix_url:
-                    rec["fix_pr_url"] = fix_url
+                rec.update(psi(site))
             except Exception as e:
-                notes.append(f"Auto-fix step failed: {e}")
+                notes.append(f"PageSpeed failed: {type(e).__name__}")
+            pages, hours = [], None
+            if GOOGLE_SA and s.get("gsc_property"):
+                try:
+                    sp["gsc"], pages = gsc_pull(s["gsc_property"])
+                except Exception as e:
+                    sp["gsc"] = {"ok": False}
+                    notes.append(f"Search Console: {e}")
+            else:
+                notes.append("Search Console not connected (add GOOGLE_SA_JSON secret and gsc_property)")
+            if GOOGLE_SA and s.get("ga4_property_id"):
+                try:
+                    hours = ga4_hours(s["ga4_property_id"], int(s.get("ga4_utc_offset", 0)))
+                except Exception as e:
+                    notes.append(f"GA4: {e}")
+            sp["hours_utc"] = hours
+            sp["slots_utc"], sp["peaks_utc"] = make_slots(hours, ppd, s.get("default_peak_hours_utc", [14, 17]))
+            sp["posts"] = match_posts(mine, pages)
+            sp["insights"] = make_insights(sp["posts"], sp.get("gsc"))
+            if GH_TOKEN:
+                try:
+                    rec.update(pr_stats(repo))
+                except Exception as e:
+                    notes.append(f"PR stats failed: {type(e).__name__}")
+
+        slots = sp.get("slots_utc") or make_slots(None, ppd, s.get("default_peak_hours_utc", [14, 17]))[0]
+        made = len([p for p in mine if p["date"] == TODAY])
+        if not (GH_TOKEN and GEMINI_KEY):
+            if full:
+                notes.append("Add GEMINI_API_KEY and TARGET_REPO_TOKEN secrets to enable auto posts")
+        elif made < ppd and (FORCE or NOW.hour >= slots[min(made, len(slots) - 1)]):
             try:
-                rec.update(pr_stats(repo))
+                meta, msg = make_post(s, repo, sp.get("insights", ""), regions)
+                if meta:
+                    meta["site"] = name
+                    posts.append(meta)
+                    sp.setdefault("posts", []).append({**meta, "clicks": 0, "impr": 0, "pos": None, "age": 0, "rank": "Too new"})
+                    rec["pr_url"] = meta["pr"]
+                    rec.update(pr_stats(repo))
+                    notes.append(msg)
+                    dirty = True
+                elif full:
+                    notes.append(msg)
             except Exception as e:
-                notes.append(f"PR stats failed: {type(e).__name__}")
-        else:
-            notes.append("Add GEMINI_API_KEY and TARGET_REPO_TOKEN secrets to enable auto posts")
-        rec["notes"] = notes
-        site_hist = hist["sites"].setdefault(name, {"days": []})
-        site_hist.update({"repo": repo, "site": site})
-        site_hist["days"] = [d for d in site_hist["days"] if d["date"] != TODAY] + [rec]
-        site_hist["days"] = site_hist["days"][-120:]
-        print(name, json.dumps(rec)[:500])
-    hist["updated"] = datetime.datetime.utcnow().isoformat() + "Z"
-    HIST.parent.mkdir(parents=True, exist_ok=True)
-    HIST.write_text(json.dumps(hist, indent=1), encoding="utf-8")
+                note = f"Post step failed: {e}"
+                if note not in notes:
+                    notes.append(note)
+                    dirty = True
+        rec["notes"] = list(dict.fromkeys(notes))
+        print(name, "full" if full else "slot-check", json.dumps(rec)[:400])
+
+    if dirty:
+        stamp = NOW.isoformat() + "Z"
+        hist["updated"] = perf["updated"] = stamp
+        jsave(DATA / "history.json", hist)
+        jsave(DATA / "perf.json", perf)
+        jsave(DATA / "posts.json", posts)
 
 
 if __name__ == "__main__":
