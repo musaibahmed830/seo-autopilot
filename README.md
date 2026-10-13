@@ -1,31 +1,62 @@
-# SEO Autopilot (free)
+# SEO Autopilot v2 (free)
 
-Roz khud: site audit + speed check + 1 draft post (Gemini free) -> draft Pull Request tumhari site repo mein.
-Dashboard: GitHub Pages par.
+Har ghante khud chalta hai: world trends dhoondta hai, best time par post likhta hai,
+Pull Request kholta hai. Dashboard GitHub Pages par.
 
-## Setup (ek baar)
-1. GitHub par naya repo banao: `seo-autopilot` (Public rakho, taake Pages free chale. Is repo mein koi secret nahi hota).
-2. Is zip ki files upload karo (Add file > Upload files). `.github/workflows/daily.yml` ko "Create new file" se banao: naam mein `.github/workflows/daily.yml` likho aur content paste karo.
-3. `config.json` kholo aur apni site ka repo link + site URL likho. Nayi site add karni ho to sites list mein ek aur block daal do.
-4. Secrets (Settings > Secrets and variables > Actions > New repository secret):
-   - `GEMINI_API_KEY`: aistudio.google.com se free key
-   - `TARGET_REPO_TOKEN`: GitHub > Settings > Developer settings > Personal access tokens > Fine-grained tokens. Sirf apni site wali repo select karo. Permissions: Contents = Read and write, Pull requests = Read and write.
-   - `PSI_API_KEY` (optional): Google PageSpeed key, na ho to bhi chalta hai.
-5. Settings > Actions > General > Workflow permissions: "Read and write permissions" select karo.
-6. Settings > Pages > Source: Deploy from a branch, Branch: main, folder: /docs. Save.
-7. Actions tab > "Daily autopilot" > Run workflow. 3-5 minute baad dashboard:
-   https://TUMHARA-USERNAME.github.io/seo-autopilot/
+## Purane setup mein kya badla
+Naye files purani files par replace kar do: scripts/run.py, docs/index.html, config.json,
+.github/workflows/daily.yml, aur docs/data mein perf.json aur posts.json (nai files).
+Purane secrets (GEMINI_API_KEY, TARGET_REPO_TOKEN) wahi rehte hain.
 
-## Auto-fix (naya)
-Audit mein 2 cheezein milen to tool khud fix likh kar ek alag Pull Request kholta hai (`auto/fix-...`):
-- Meta description 160 characters se lambi/70 se chhoti ho
-- Homepage par `href="#"` wale links (sirf wahi badalta hai jinka label kisi asli page se match karta ho; baqi ko "Needs your decision" mein likh deta hai)
-Ye sirf PR banata hai, tumhare merge karne tak site par kuch nahi badalta. Band karne ke liye `config.json` mein `"auto_fix": false` kar do.
+## Naya: Google ka data (rankings, viewers, best time) - free
+1. console.cloud.google.com par naya project banao.
+2. APIs and Services > Library: "Google Search Console API" Enable karo.
+   (Optional, best-time ke liye: "Google Analytics Data API" bhi Enable karo.)
+3. IAM and Admin > Service Accounts > Create service account (naam: autopilot).
+   Phir us account > Keys > Add key > Create new key > JSON. Ek file download hogi.
+4. Us service account ki email copy karo (xxx@xxx.iam.gserviceaccount.com).
+5. search.google.com/search-console > apni site > Settings > Users and permissions >
+   Add user > wohi email, permission "Restricted" (read only) kafi hai.
+   (Site abhi verify nahi hai to pehle Search Console mein add + verify karo.)
+6. GA4 (optional): Admin > Property access management > wohi email as Viewer.
+   Property ID: Admin > Property details. Isay config.json mein "ga4_property_id" mein likho.
+   Site mein GA4 code lagaa hona chahiye.
+7. GitHub repo > Settings > Secrets > New secret:
+   Name: GOOGLE_SA_JSON, Value: us JSON file ka POORA content (paste).
+8. config.json mein "gsc_property" likho:
+   - Domain property ho to: sc-domain:stylevoguefashion.com
+   - URL-prefix property ho to: https://stylevoguefashion.com/
+9. Actions > Autopilot > Run workflow (manual run = full report + post abhi).
+
+## Config options (config.json, har site ke liye)
+- posts_per_day: roz kitni posts (default 1)
+- topic_mix: fashion aur news ka ratio, e.g. {"fashion":0.6,"news":0.4}
+- auto_merge_types: [] = har post review ke baad merge. ["fashion"] = fashion posts khud publish.
+  News ko auto-merge mat karo, galat fact ka risk zyada hai.
+- default_peak_hours_utc: GA4 na ho to ye ghante use hote hain
+- ga4_utc_offset: GA4 property ka time zone (Pakistan = 5)
+- regions: kaunse mulkon ke trends dekhne hain (top level mein)
 
 ## Roz ka kaam
-Dashboard kholo, "Review drafts" dabao, post padho, theek karo, Merge karo = site par publish.
+Dashboard dekho, "Review drafts" se post padho, facts check karo, Merge = publish.
 
 ## Dhyan
-- Post file `content/posts/slug.mdx` banti hai (frontmatter: title, description, category, date). Agar tumhari site ka format alag hai to `render()` in scripts/run.py badlo.
-- 3 se zyada drafts review ke intezar mein hon to naya draft nahi banta.
-- AI ki likhi post ko bina padhe merge mat karo, galat facts site ko nuqsan dete hain.
+- Search Console ka data 2-3 din late aata hai, aur nayi post ko rank hone mein hafte lagte hain.
+  Learning shuru mein slow hogi, 3-4 hafte baad behtar.
+- "Learning" ka matlab: system apni posts ke results dekh kar agli topics chunta hai.
+  Koi AI model train nahi hota.
+- Viral ki guarantee koi nahi de sakta.
+
+## Update 3: celebrities, hot products, auto-removal
+- Content types (config "topic_mix"): fashion, products, celebrity, news.
+  - celebrity: trending actors/models, sirf PUBLIC kaam aur style (projects, awards, red carpet).
+    Personal life, rishte, gossip, afwahein, sehat, legal baatein nahi likhi jati (defamation aur AdSense risk).
+  - products: trending product categories ka shopping guide. Prices aur "best seller #1" ke claims nahi hote.
+    Affiliate links lagao to config mein "affiliate_disclosure" likho, wo post ke upar lag jayegi.
+- Auto-removal ("prune_after_days", default 7): har roz check karta hai. Agar post 7+ din purani hai, Search Console
+  mein 0 clicks, 3 se kam impressions, aur (GA4 connected ho to) 0 views, to ek "Remove N low-performing posts"
+  Pull Request kholta hai. Post tabhi delete hoti hai jab tum wo PR merge karo.
+  - Search Console connected na ho to kuch bhi delete nahi hota.
+  - Data 2-3 din late aata hai aur nayi posts ko index hone mein hafte lag sakte hain. 7 din bohot jaldi hai,
+    21-30 din behtar hai. Badalne ke liye "prune_after_days" ka number badlo (0 = band).
+  - Delete ki hui page par purana link 404 dega. Post wapas chahiye to git history se restore ho jati hai.
