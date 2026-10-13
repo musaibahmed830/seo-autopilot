@@ -1,9 +1,9 @@
-name: Daily autopilot
+name: Autopilot
 
 on:
   schedule:
-    - cron: "0 3 * * *"   # every day 03:00 UTC = 8:00 AM Pakistan time
-  workflow_dispatch:       # manual run button in the Actions tab
+    - cron: "17 * * * *"   # every hour (checks trends and the best posting slot)
+  workflow_dispatch:       # manual run = full report + post now
 
 permissions:
   contents: write
@@ -20,16 +20,20 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Audit sites and create draft posts
+      - run: pip install google-auth requests
+
+      - name: Run autopilot
         run: python scripts/run.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
           PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          FORCE_FULL: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
 
       - name: Save dashboard data
         run: |
           git config user.name "autopilot[bot]"
           git config user.email "autopilot@users.noreply.github.com"
           git add docs/data
-          git diff --cached --quiet || (git commit -m "Daily data $(date -u +%F)" && git push)
+          git diff --cached --quiet || (git commit -m "Autopilot data $(date -u +%F-%H)" && git push)
