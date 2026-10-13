@@ -88,6 +88,7 @@ function site(name,s,p){
     stat(last.merged_30d??full.merged_30d,'Posts published (30 days)'),stat(full.perf,'Mobile speed (0-100)'),stat(full.seo,'SEO score (0-100)'));
   c.append(t1);
   if(last.pr_url){const q=el('p','','Latest post: ');const a=el('a','','open it');a.href=last.pr_url;a.target='_blank';q.append(a);c.append(q)}
+  const pr=[...days].reverse().find(d=>d.prune_pr_url);if(pr){const q=el('p','','Posts waiting to be removed: ');const a=el('a','','review removal PR');a.href=pr.prune_pr_url;a.target='_blank';q.append(a);c.append(q)}
 
   sec(c,'Next post times ('+TZN+')');
   const sl=(p||{}).slots_utc||[];
@@ -97,8 +98,8 @@ function site(name,s,p){
   sec(c,'Posts made by autopilot: ranking');
   const ps=(p||{}).posts||[];
   if(!ps.length)c.append(el('div','empty','Abhi koi autopilot post nahi hai.'));
-  else c.append(table(['Post','Type','Region','Clicks','Impr.','Avg pos.','Status'],[...ps].reverse().map(x=>[
-    x.title,x.type,x.region,String(x.clicks),String(x.impr),x.pos==null?'-':String(x.pos),{t:x.rank,cls:rcls(x.rank)}])));
+  else c.append(table(['Post','Type','Region','Clicks','Impr.','Views','Avg pos.','Status'],[...ps].reverse().map(x=>[
+    x.title,x.type,x.region,String(x.clicks),String(x.impr),x.views==null?'-':String(x.views),x.pos==null?'-':String(x.pos),x.prune_pr?{t:'Marked for removal',cls:'bad'}:{t:x.rank,cls:rcls(x.rank)}])));
 
   if(g.ok){
     sec(c,'Where your viewers come from (28 days)');
