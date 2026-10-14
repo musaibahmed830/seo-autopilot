@@ -454,7 +454,7 @@ people would search), angle (one sentence)."""
 
 def write_article(topic, kws, ptype, ctx):
     nl = "\n"
-    prompt = f"""Write an original, helpful article of 900-1300 words in Markdown for a global English-language website.
+    prompt = f"""Write an original, helpful article of AT LEAST 1100 words (aim for 1300) in Markdown for a global English-language website. Short articles are rejected.
 Topic: {topic.get('topic')}. Angle: {topic.get('angle')}. Main region: {topic.get('region')}.
 Primary keyword: {topic.get('seed_keyword')}. Weave in these related search phrases naturally (only where they fit):
 {', '.join(kws)}
@@ -469,6 +469,22 @@ Rules:
 Return JSON with keys: title (max 60 chars, includes the primary keyword), slug (kebab-case), description (max 155 chars),
 category (one of: Trending, Style Tips, Accessories, Wardrobe Essentials, Sustainable), tags (list of 3-6), body (Markdown)."""
     return gemini(prompt)
+
+
+def expand_body(post, min_words, ptype, ctx):
+    nl = "\n"
+    prompt = f"""Below is a draft article that is too short. Rewrite and EXPAND it to at least {min_words + 300} words
+by adding depth: more sections, practical tips, explanations and fuller FAQ answers. Keep the same topic and keep all
+facts consistent. Do NOT invent quotes, numbers, prices, dates or claims. {SAFE} {SHAPES[ptype]}
+Source headlines you may rely on:
+{nl.join(ctx[:40])}
+
+DRAFT ({post.get('title')}):
+{post.get('body', '')}
+
+Return JSON with one key: body (the full expanded article in Markdown, no H1)."""
+    out = gemini(prompt)
+    return out.get("body") or post.get("body", "") if isinstance(out, dict) else post.get("body", "")
 
 
 def render(post, kw):
@@ -500,8 +516,15 @@ def make_post(s, repo, insights, regions):
     reg = str(topic.get("region") or "").upper()
     cc = reg if len(reg) == 2 and reg.isalpha() else "US"
     post = write_article(topic, autocomplete(seed, cc), ptype, pool_for(ptype, P, 25) + P['trends'][:30])
-    if len(post.get("body", "").split()) < 600:
-        raise RuntimeError("generated post too short, not saved")
+    min_words = int(s.get("min_words", 600))
+    ctx = pool_for(ptype, P, 25) + P["trends"][:30]
+    for _ in range(2):  # weaker free models often write short: ask them to expand, up to 2 times
+        if len(post.get("body", "").split()) >= min_words:
+            break
+        post["body"] = expand_body(post, min_words, ptype, ctx)
+    words = len(post.get("body", "").split())
+    if words < min_words:
+        raise RuntimeError(f"generated post too short ({words} words, need {min_words}), not saved")
     slug = re.sub(r"[^a-z0-9-]+", "-", post["slug"].lower()).strip("-")[:70]
     if slug in slugs:
         raise RuntimeError("slug already exists, not saved")
