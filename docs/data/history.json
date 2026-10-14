@@ -85,7 +85,7 @@
     },
     {
      "date": "2026-10-14",
-     "load_sec": 1.09,
+     "load_sec": 0.73,
      "links_checked": 25,
      "links_broken": 0,
      "sitemap_urls": 52,
@@ -103,5 +103,5 @@
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-14T15:09:47.278515Z"
+ "updated": "2026-10-14T18:16:02.012687Z"
 }
