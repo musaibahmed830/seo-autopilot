@@ -26,6 +26,8 @@ jobs:
         run: python scripts/run.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TARGET_REPO_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
           PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
           GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
