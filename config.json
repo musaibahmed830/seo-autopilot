@@ -22,6 +22,7 @@
       "ga4_property_id": "",
       "ga4_utc_offset": 5,
       "posts_per_day": 2,
+      "min_words": 600,
       "default_peak_hours_utc": [14, 17],
       "topic_mix": {"fashion": 0.4, "products": 0.25, "celebrity": 0.2, "news": 0.15},
       "category_by_type": {"news": "Trending", "celebrity": "Trending", "products": "Wardrobe Essentials"},
