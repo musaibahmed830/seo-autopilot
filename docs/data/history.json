@@ -94,12 +94,14 @@
      "drafts_open": 0,
      "merged_total": 11,
      "merged_30d": 11,
-     "notes": []
+     "notes": [
+      "Post step failed: Gemini failed after retries (limit reached or bad key)"
+     ]
     }
    ],
    "repo": "musaibahmed830/Fashion-2025",
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-14T04:53:30.817468Z"
+ "updated": "2026-10-14T15:09:47.278515Z"
 }
