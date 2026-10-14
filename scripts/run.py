@@ -22,6 +22,8 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
+import llm
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 CONFIG = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
 DATA = ROOT / "docs" / "data"
@@ -392,19 +394,8 @@ def autocomplete(seed, cc="US"):
 
 # ---------- writing ----------
 def gemini(prompt):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
-    body = json.dumps({"contents": [{"parts": [{"text": prompt}]}],
-                       "generationConfig": {"responseMimeType": "application/json", "temperature": 0.8}}).encode()
-    hdr = {"Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY}
-    for attempt in range(4):
-        code, resp, _ = http(url, body, hdr, timeout=120)
-        if code == 200:
-            try:
-                return json.loads(json.loads(resp)["candidates"][0]["content"]["parts"][0]["text"])
-            except Exception:
-                pass
-        time.sleep(20 * (attempt + 1))  # free tier: back off on 429
-    raise RuntimeError("Gemini failed after retries (limit reached or bad key)")
+    """Kept under the old name: tries Gemini, then Groq, then OpenRouter free models."""
+    return llm.generate_json(prompt)
 
 
 TYPE_RULES = {
@@ -684,9 +675,9 @@ def main():
 
         slots = sp.get("slots_utc") or make_slots(None, ppd, s.get("default_peak_hours_utc", [14, 17]))[0]
         made = len([p for p in mine if p["date"] == TODAY])
-        if not (GH_TOKEN and GEMINI_KEY):
+        if not (GH_TOKEN and llm.has_any_key()):
             if full:
-                notes.append("Add GEMINI_API_KEY and TARGET_REPO_TOKEN secrets to enable auto posts")
+                notes.append("Add TARGET_REPO_TOKEN and at least one LLM key (GEMINI_API_KEY, GROQ_API_KEY or OPENROUTER_API_KEY) to enable auto posts")
         elif made < ppd and (FORCE or NOW.hour >= slots[min(made, len(slots) - 1)]):
             try:
                 meta, msg = make_post(s, repo, sp.get("insights", ""), regions)
