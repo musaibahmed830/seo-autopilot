@@ -82,11 +82,24 @@
      "notes": [
       "Post step failed: Gemini failed after retries (limit reached or bad key)"
      ]
+    },
+    {
+     "date": "2026-10-14",
+     "load_sec": 1.09,
+     "links_checked": 25,
+     "links_broken": 0,
+     "sitemap_urls": 52,
+     "sitemap_newest": "2026-10-13",
+     "issues": [],
+     "drafts_open": 0,
+     "merged_total": 11,
+     "merged_30d": 11,
+     "notes": []
     }
    ],
    "repo": "musaibahmed830/Fashion-2025",
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-13T20:15:08.074381Z"
+ "updated": "2026-10-14T04:53:30.817468Z"
 }
