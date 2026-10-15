@@ -46,6 +46,24 @@
      "pos": null,
      "age": 1,
      "rank": "Too new"
+    },
+    {
+     "slug": "fall-fashion-accessories-trends-inside-out-bags",
+     "title": "Fall Fashion Accessories Trends: Inside-Out Bags & More",
+     "date": "2026-10-15",
+     "type": "fashion",
+     "path": "content/posts/fall-fashion-accessories-trends-inside-out-bags.mdx",
+     "region": "GLOBAL",
+     "keyword": "style trends",
+     "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/15",
+     "auto_merged": false,
+     "site": "StyleVogue",
+     "clicks": 0,
+     "impr": 0,
+     "views": null,
+     "pos": null,
+     "age": 0,
+     "rank": "Too new"
     }
    ],
    "insights": "Audience countries (28d clicks): AU 0, FR 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
@@ -313,5 +331,5 @@
    }
   }
  },
- "updated": "2026-10-15T01:30:37.653128Z"
+ "updated": "2026-10-15T13:26:15.725274Z"
 }
