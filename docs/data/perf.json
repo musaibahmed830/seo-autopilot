@@ -64,6 +64,24 @@
      "pos": null,
      "age": 0,
      "rank": "Too new"
+    },
+    {
+     "slug": "what-style-is-trending-right-now-rainy-day-fashion",
+     "title": "What Style Is Trending Right Now for Rainy Days",
+     "date": "2026-10-15",
+     "type": "fashion",
+     "path": "content/posts/what-style-is-trending-right-now-rainy-day-fashion.mdx",
+     "region": "GLOBAL",
+     "keyword": "what style is trending right now",
+     "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/16",
+     "auto_merged": false,
+     "site": "StyleVogue",
+     "clicks": 0,
+     "impr": 0,
+     "views": null,
+     "pos": null,
+     "age": 0,
+     "rank": "Too new"
     }
    ],
    "insights": "Audience countries (28d clicks): AU 0, FR 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
@@ -331,5 +349,5 @@
    }
   }
  },
- "updated": "2026-10-15T13:26:15.725274Z"
+ "updated": "2026-10-15T18:18:15.060336Z"
 }
