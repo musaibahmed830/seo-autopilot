@@ -118,6 +118,24 @@
      "pos": null,
      "age": 1,
      "rank": "Too new"
+    },
+    {
+     "slug": "wearable-beauty-accessories-shopping-guide",
+     "title": "Wearable Beauty Accessories: The Viral Crossover Guide",
+     "date": "2026-10-17",
+     "type": "products",
+     "path": "content/posts/wearable-beauty-accessories-shopping-guide.mdx",
+     "region": "GLOBAL",
+     "keyword": "wearable beauty accessories",
+     "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/19",
+     "auto_merged": false,
+     "site": "StyleVogue",
+     "clicks": 0,
+     "impr": 0,
+     "views": null,
+     "pos": null,
+     "age": 0,
+     "rank": "Too new"
     }
    ],
    "insights": "Audience countries (28d clicks): AU 0, FR 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
@@ -385,5 +403,5 @@
    }
   }
  },
- "updated": "2026-10-17T04:25:43.018131Z"
+ "updated": "2026-10-17T12:30:31.308881Z"
 }
