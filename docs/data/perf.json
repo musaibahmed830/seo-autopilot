@@ -154,6 +154,24 @@
      "pos": null,
      "age": 1,
      "rank": "Too new"
+    },
+    {
+     "slug": "vintage-workwear-trend-luxury-fashion",
+     "title": "The Vintage Workwear Trend: Utilitarian Luxury",
+     "date": "2026-10-18",
+     "type": "fashion",
+     "path": "content/posts/vintage-workwear-trend-luxury-fashion.mdx",
+     "region": "GLOBAL",
+     "keyword": "vintage workwear trend",
+     "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/21",
+     "auto_merged": false,
+     "site": "StyleVogue",
+     "clicks": 0,
+     "impr": 0,
+     "views": null,
+     "pos": null,
+     "age": 0,
+     "rank": "Too new"
     }
    ],
    "insights": "Audience countries (28d clicks): AU 0, FR 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
@@ -421,5 +439,5 @@
    }
   }
  },
- "updated": "2026-10-18T01:02:26.423806Z"
+ "updated": "2026-10-18T14:34:24.934664Z"
 }
