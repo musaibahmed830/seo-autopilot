@@ -26,7 +26,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -44,7 +44,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -62,7 +62,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -80,7 +80,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -98,7 +98,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -116,7 +116,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -134,7 +134,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     },
     {
@@ -152,7 +152,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     }
    ],
@@ -160,17 +160,12 @@
    "gsc": {
     "ok": true,
     "range": [
-     "2026-09-17",
-     "2026-10-14"
+     "2026-09-18",
+     "2026-10-15"
     ],
     "clicks": 0,
     "impr": 18,
     "series": [
-     {
-      "d": "09-17",
-      "c": 0,
-      "i": 0
-     },
      {
       "d": "09-18",
       "c": 0,
@@ -305,6 +300,11 @@
       "d": "10-14",
       "c": 0,
       "i": 0
+     },
+     {
+      "d": "10-15",
+      "c": 0,
+      "i": 0
      }
     ],
     "countries": [
@@ -421,5 +421,5 @@
    }
   }
  },
- "updated": "2026-10-17T17:10:22.606607Z"
+ "updated": "2026-10-18T01:02:26.423806Z"
 }
