@@ -172,6 +172,24 @@
      "pos": null,
      "age": 0,
      "rank": "Too new"
+    },
+    {
+     "slug": "victorias-secret-fashion-show-2026-runway-trends",
+     "title": "Victorias Secret Fashion Show: 2026 Runway Trends",
+     "date": "2026-10-18",
+     "type": "fashion",
+     "path": "content/posts/victorias-secret-fashion-show-2026-runway-trends.mdx",
+     "region": "GLOBAL",
+     "keyword": "victorias secret fashion show",
+     "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/22",
+     "auto_merged": false,
+     "site": "StyleVogue",
+     "clicks": 0,
+     "impr": 0,
+     "views": null,
+     "pos": null,
+     "age": 0,
+     "rank": "Too new"
     }
    ],
    "insights": "Audience countries (28d clicks): AU 0, FR 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
@@ -439,5 +457,5 @@
    }
   }
  },
- "updated": "2026-10-18T14:34:24.934664Z"
+ "updated": "2026-10-18T18:05:40.315990Z"
 }
