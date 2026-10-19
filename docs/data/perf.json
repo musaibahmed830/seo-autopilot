@@ -26,7 +26,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -44,7 +44,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -62,7 +62,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -80,7 +80,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -98,7 +98,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -116,7 +116,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -134,7 +134,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -152,7 +152,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -170,7 +170,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     },
     {
@@ -188,25 +188,20 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     }
    ],
-   "insights": "Audience countries (28d clicks): AU 0, FR 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
+   "insights": "Audience countries (28d clicks): AU 0, FR 0, JP 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
    "gsc": {
     "ok": true,
     "range": [
-     "2026-09-18",
-     "2026-10-15"
+     "2026-09-19",
+     "2026-10-16"
     ],
     "clicks": 0,
     "impr": 18,
     "series": [
-     {
-      "d": "09-18",
-      "c": 0,
-      "i": 1
-     },
      {
       "d": "09-19",
       "c": 0,
@@ -341,6 +336,11 @@
       "d": "10-15",
       "c": 0,
       "i": 0
+     },
+     {
+      "d": "10-16",
+      "c": 0,
+      "i": 1
      }
     ],
     "countries": [
@@ -352,7 +352,12 @@
      {
       "country": "FR",
       "clicks": 0,
-      "impr": 3
+      "impr": 2
+     },
+     {
+      "country": "JP",
+      "clicks": 0,
+      "impr": 1
      },
      {
       "country": "US",
@@ -364,14 +369,14 @@
      {
       "q": "fashion trends",
       "clicks": 0,
-      "impr": 1,
-      "pos": 51
+      "impr": 2,
+      "pos": 71.5
      },
      {
       "q": "style trend",
       "clicks": 0,
-      "impr": 3,
-      "pos": 77.3
+      "impr": 2,
+      "pos": 77.5
      },
      {
       "q": "style trends",
@@ -397,7 +402,7 @@
       "url": "https://stylevoguefashion.com/fashion/trends",
       "clicks": 0,
       "impr": 7,
-      "pos": 60.7
+      "pos": 62.9
      },
      {
       "url": "https://stylevoguefashion.com/fashion/vintage-fashion-revival",
@@ -457,5 +462,5 @@
    }
   }
  },
- "updated": "2026-10-18T18:05:40.315990Z"
+ "updated": "2026-10-19T01:17:00.962834Z"
 }
