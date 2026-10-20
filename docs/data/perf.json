@@ -26,7 +26,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -44,7 +44,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -62,7 +62,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -80,7 +80,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -98,7 +98,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -116,7 +116,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -134,7 +134,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -152,7 +152,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -170,7 +170,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -188,7 +188,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -206,7 +206,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     },
     {
@@ -224,7 +224,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     }
    ],
@@ -232,17 +232,12 @@
    "gsc": {
     "ok": true,
     "range": [
-     "2026-09-19",
-     "2026-10-16"
+     "2026-09-20",
+     "2026-10-17"
     ],
     "clicks": 0,
-    "impr": 18,
+    "impr": 19,
     "series": [
-     {
-      "d": "09-19",
-      "c": 0,
-      "i": 0
-     },
      {
       "d": "09-20",
       "c": 0,
@@ -377,6 +372,11 @@
       "d": "10-16",
       "c": 0,
       "i": 1
+     },
+     {
+      "d": "10-17",
+      "c": 0,
+      "i": 1
      }
     ],
     "countries": [
@@ -393,7 +393,7 @@
      {
       "country": "JP",
       "clicks": 0,
-      "impr": 1
+      "impr": 2
      },
      {
       "country": "US",
@@ -405,8 +405,8 @@
      {
       "q": "fashion trends",
       "clicks": 0,
-      "impr": 2,
-      "pos": 71.5
+      "impr": 3,
+      "pos": 77.7
      },
      {
       "q": "style trend",
@@ -437,8 +437,8 @@
      {
       "url": "https://stylevoguefashion.com/fashion/trends",
       "clicks": 0,
-      "impr": 7,
-      "pos": 62.9
+      "impr": 8,
+      "pos": 66.2
      },
      {
       "url": "https://stylevoguefashion.com/fashion/vintage-fashion-revival",
@@ -498,5 +498,5 @@
    }
   }
  },
- "updated": "2026-10-19T20:35:11.710808Z"
+ "updated": "2026-10-20T00:19:56.599616Z"
 }
