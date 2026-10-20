@@ -226,6 +226,24 @@
      "pos": null,
      "age": 1,
      "rank": "Too new"
+    },
+    {
+     "slug": "kylie-jenners-victorias-secret-fantasy-bra-style-trend-2026",
+     "title": "Kylie Jenner Victoria's Secret Fantasy Bra Style Trend",
+     "date": "2026-10-20",
+     "type": "fashion",
+     "path": "content/posts/kylie-jenners-victorias-secret-fantasy-bra-style-trend-2026.mdx",
+     "region": "GLOBAL",
+     "keyword": "style trend",
+     "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/25",
+     "auto_merged": false,
+     "site": "StyleVogue",
+     "clicks": 0,
+     "impr": 0,
+     "views": null,
+     "pos": null,
+     "age": 0,
+     "rank": "Too new"
     }
    ],
    "insights": "Audience countries (28d clicks): AU 0, FR 0, JP 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
@@ -498,5 +516,5 @@
    }
   }
  },
- "updated": "2026-10-20T00:19:56.599616Z"
+ "updated": "2026-10-20T17:03:42.856481Z"
 }
