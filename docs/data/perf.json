@@ -26,8 +26,9 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 6,
-     "rank": "Too new"
+     "age": 7,
+     "rank": "Not ranking / not indexed",
+     "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/27"
     },
     {
      "slug": "unlocking-fashion-trends-through-viral-luxury-rental-apps",
@@ -44,8 +45,9 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 6,
-     "rank": "Too new"
+     "age": 7,
+     "rank": "Not ranking / not indexed",
+     "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/27"
     },
     {
      "slug": "fall-fashion-accessories-trends-inside-out-bags",
@@ -62,7 +64,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -80,7 +82,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -98,7 +100,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -116,7 +118,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -134,7 +136,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -152,7 +154,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -170,7 +172,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -188,7 +190,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -206,7 +208,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -224,7 +226,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -242,7 +244,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     },
     {
@@ -260,25 +262,20 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     }
    ],
-   "insights": "Audience countries (28d clicks): AU 0, FR 0, JP 0, US 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
+   "insights": "Audience countries (28d clicks): AU 0, FR 0, JP 0, US 0\nBest posts: \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks)\nWeakest posts (avoid similar topics): \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks)\nAverage impressions by type: products 0\nAverage impressions by region: GLOBAL 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
    "gsc": {
     "ok": true,
     "range": [
-     "2026-09-20",
-     "2026-10-17"
+     "2026-09-21",
+     "2026-10-18"
     ],
     "clicks": 0,
-    "impr": 19,
+    "impr": 18,
     "series": [
-     {
-      "d": "09-20",
-      "c": 0,
-      "i": 1
-     },
      {
       "d": "09-21",
       "c": 0,
@@ -413,6 +410,11 @@
       "d": "10-17",
       "c": 0,
       "i": 1
+     },
+     {
+      "d": "10-18",
+      "c": 0,
+      "i": 0
      }
     ],
     "countries": [
@@ -434,7 +436,7 @@
      {
       "country": "US",
       "clicks": 0,
-      "impr": 5
+      "impr": 4
      }
     ],
     "queries": [
@@ -459,8 +461,8 @@
      {
       "q": "vintagestyle",
       "clicks": 0,
-      "impr": 2,
-      "pos": 95.5
+      "impr": 1,
+      "pos": 92
      },
      {
       "q": "what style is trending right now",
@@ -479,8 +481,8 @@
      {
       "url": "https://stylevoguefashion.com/fashion/vintage-fashion-revival",
       "clicks": 0,
-      "impr": 3,
-      "pos": 67
+      "impr": 2,
+      "pos": 51
      },
      {
       "url": "https://stylevoguefashion.com/",
@@ -534,5 +536,5 @@
    }
   }
  },
- "updated": "2026-10-20T20:35:01.558932Z"
+ "updated": "2026-10-21T04:46:23.501203Z"
 }
