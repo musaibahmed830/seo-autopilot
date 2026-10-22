@@ -35,7 +35,8 @@
   "keyword": "style trends",
   "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/15",
   "auto_merged": false,
-  "site": "StyleVogue"
+  "site": "StyleVogue",
+  "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/30"
  },
  {
   "slug": "what-style-is-trending-right-now-rainy-day-fashion",
@@ -47,7 +48,8 @@
   "keyword": "what style is trending right now",
   "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/16",
   "auto_merged": false,
-  "site": "StyleVogue"
+  "site": "StyleVogue",
+  "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/30"
  },
  {
   "slug": "mens-fall-winter-fashion-2026-cummerbund-outerwear-guide",
