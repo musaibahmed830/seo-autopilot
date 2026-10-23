@@ -27,7 +27,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 8,
+     "age": 9,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -46,7 +46,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 8,
+     "age": 9,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -60,13 +60,13 @@
      "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/15",
      "auto_merged": false,
      "site": "StyleVogue",
+     "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/30",
      "clicks": 0,
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 7,
-     "rank": "Not ranking / not indexed",
-     "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/30"
+     "age": 8,
+     "rank": "Not ranking / not indexed"
     },
     {
      "slug": "what-style-is-trending-right-now-rainy-day-fashion",
@@ -79,13 +79,13 @@
      "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/16",
      "auto_merged": false,
      "site": "StyleVogue",
+     "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/30",
      "clicks": 0,
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 7,
-     "rank": "Not ranking / not indexed",
-     "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/30"
+     "age": 8,
+     "rank": "Not ranking / not indexed"
     },
     {
      "slug": "mens-fall-winter-fashion-2026-cummerbund-outerwear-guide",
@@ -102,8 +102,9 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 6,
-     "rank": "Too new"
+     "age": 7,
+     "rank": "Not ranking / not indexed",
+     "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/33"
     },
     {
      "slug": "fall-fashion-finds-cozy-knitwear-discounted-boots-guide",
@@ -120,8 +121,9 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 6,
-     "rank": "Too new"
+     "age": 7,
+     "rank": "Not ranking / not indexed",
+     "prune_pr": "https://github.com/musaibahmed830/Fashion-2025/pull/33"
     },
     {
      "slug": "wearable-beauty-accessories-shopping-guide",
@@ -138,7 +140,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -156,7 +158,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -174,7 +176,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -192,7 +194,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -210,7 +212,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -228,7 +230,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -246,7 +248,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -264,7 +266,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -282,7 +284,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -300,7 +302,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -318,7 +320,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     },
     {
@@ -336,7 +338,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     }
    ],
@@ -344,17 +346,12 @@
    "gsc": {
     "ok": true,
     "range": [
-     "2026-09-22",
-     "2026-10-19"
+     "2026-09-23",
+     "2026-10-20"
     ],
     "clicks": 0,
     "impr": 18,
     "series": [
-     {
-      "d": "09-22",
-      "c": 0,
-      "i": 0
-     },
      {
       "d": "09-23",
       "c": 0,
@@ -489,6 +486,11 @@
       "d": "10-19",
       "c": 0,
       "i": 0
+     },
+     {
+      "d": "10-20",
+      "c": 0,
+      "i": 0
      }
     ],
     "countries": [
@@ -610,5 +612,5 @@
    }
   }
  },
- "updated": "2026-10-22T19:15:00.478149Z"
+ "updated": "2026-10-23T01:31:22.519948Z"
 }
