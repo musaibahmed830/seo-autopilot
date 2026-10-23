@@ -358,6 +358,24 @@
      "pos": null,
      "age": 0,
      "rank": "Too new"
+    },
+    {
+     "slug": "fall-fashion-trends-under-100",
+     "title": "Fall Fashion Trends Under $100 for an Expensive Look",
+     "date": "2026-10-23",
+     "type": "fashion",
+     "path": "content/posts/fall-fashion-trends-under-100.mdx",
+     "region": "GLOBAL",
+     "keyword": "fall fashion trends",
+     "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/35",
+     "auto_merged": false,
+     "site": "StyleVogue",
+     "clicks": 0,
+     "impr": 0,
+     "views": null,
+     "pos": null,
+     "age": 0,
+     "rank": "Too new"
     }
    ],
    "insights": "Audience countries (28d clicks): AU 0, FR 0, JP 0, US 0\nBest posts: \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks); \"Fall Fashion Accessories Trends: Inside-Out Bags & More\" (fashion, GLOBAL, 0 impressions, 0 clicks)\nWeakest posts (avoid similar topics): \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks); \"Fall Fashion Accessories Trends: Inside-Out Bags & More\" (fashion, GLOBAL, 0 impressions, 0 clicks)\nAverage impressions by type: products 0, fashion 0\nAverage impressions by region: GLOBAL 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
@@ -630,5 +648,5 @@
    }
   }
  },
- "updated": "2026-10-23T13:26:41.408728Z"
+ "updated": "2026-10-23T18:21:28.344240Z"
 }
