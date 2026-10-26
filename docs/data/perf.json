@@ -448,6 +448,24 @@
      "pos": null,
      "age": 1,
      "rank": "Too new"
+    },
+    {
+     "slug": "early-black-friday-activewear-sales",
+     "title": "Early Black Friday Activewear Sales Guide",
+     "date": "2026-10-26",
+     "type": "products",
+     "path": "content/posts/early-black-friday-activewear-sales.mdx",
+     "region": "GLOBAL",
+     "keyword": "early black friday activewear sales",
+     "pr": "https://github.com/musaibahmed830/Fashion-2025/pull/40",
+     "auto_merged": false,
+     "site": "StyleVogue",
+     "clicks": 0,
+     "impr": 0,
+     "views": null,
+     "pos": null,
+     "age": 0,
+     "rank": "Too new"
     }
    ],
    "insights": "Audience countries (28d clicks): AU 0, FR 0, JP 0, NG 0, US 0\nBest posts: \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks); \"Fall Fashion Accessories Trends: Inside-Out Bags & More\" (fashion, GLOBAL, 0 impressions, 0 clicks)\nWeakest posts (avoid similar topics): \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks); \"Fall Fashion Accessories Trends: Inside-Out Bags & More\" (fashion, GLOBAL, 0 impressions, 0 clicks)\nAverage impressions by type: products 0, fashion 0, celebrity 0\nAverage impressions by region: GLOBAL 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
@@ -725,5 +743,5 @@
    }
   }
  },
- "updated": "2026-10-26T01:09:56.183976Z"
+ "updated": "2026-10-26T13:05:51.363043Z"
 }
