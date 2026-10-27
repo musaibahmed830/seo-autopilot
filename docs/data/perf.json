@@ -27,7 +27,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 12,
+     "age": 13,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -46,7 +46,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 12,
+     "age": 13,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -65,7 +65,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 11,
+     "age": 12,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -84,7 +84,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 11,
+     "age": 12,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -103,7 +103,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 10,
+     "age": 11,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -122,7 +122,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 10,
+     "age": 11,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -140,7 +140,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 9,
+     "age": 10,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -158,7 +158,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 9,
+     "age": 10,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -176,7 +176,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 8,
+     "age": 9,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -194,7 +194,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 8,
+     "age": 9,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -212,7 +212,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 7,
+     "age": 8,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -230,7 +230,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 7,
+     "age": 8,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -248,8 +248,8 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 6,
-     "rank": "Too new"
+     "age": 7,
+     "rank": "Not ranking / not indexed"
     },
     {
      "slug": "dakota-johnson-style-autumn-brown-denim",
@@ -266,8 +266,8 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 6,
-     "rank": "Too new"
+     "age": 7,
+     "rank": "Not ranking / not indexed"
     },
     {
      "slug": "playstation-plus-october-2026-games-guide",
@@ -284,7 +284,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -302,7 +302,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -320,7 +320,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -338,7 +338,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -356,7 +356,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -374,7 +374,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -392,7 +392,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -410,7 +410,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -428,7 +428,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -446,7 +446,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 1,
+     "age": 2,
      "rank": "Too new"
     },
     {
@@ -464,7 +464,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     },
     {
@@ -482,7 +482,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     }
    ],
@@ -490,17 +490,12 @@
    "gsc": {
     "ok": true,
     "range": [
-     "2026-09-26",
-     "2026-10-23"
+     "2026-09-27",
+     "2026-10-24"
     ],
     "clicks": 0,
     "impr": 50,
     "series": [
-     {
-      "d": "09-26",
-      "c": 0,
-      "i": 0
-     },
      {
       "d": "09-27",
       "c": 0,
@@ -635,6 +630,11 @@
       "d": "10-23",
       "c": 0,
       "i": 0
+     },
+     {
+      "d": "10-24",
+      "c": 0,
+      "i": 0
      }
     ],
     "countries": [
@@ -761,5 +761,5 @@
    }
   }
  },
- "updated": "2026-10-26T19:19:15.767516Z"
+ "updated": "2026-10-27T05:04:21.921190Z"
 }
