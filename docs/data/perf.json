@@ -27,7 +27,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 15,
+     "age": 16,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -46,7 +46,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 15,
+     "age": 16,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -65,7 +65,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 14,
+     "age": 15,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -84,7 +84,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 14,
+     "age": 15,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -103,7 +103,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 13,
+     "age": 14,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -122,7 +122,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 13,
+     "age": 14,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -140,7 +140,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 12,
+     "age": 13,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -158,7 +158,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 12,
+     "age": 13,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -176,7 +176,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 11,
+     "age": 12,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -194,7 +194,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 11,
+     "age": 12,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -212,7 +212,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 10,
+     "age": 11,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -230,7 +230,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 10,
+     "age": 11,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -248,7 +248,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 9,
+     "age": 10,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -266,7 +266,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 9,
+     "age": 10,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -284,7 +284,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 8,
+     "age": 9,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -302,7 +302,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 8,
+     "age": 9,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -320,7 +320,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 7,
+     "age": 8,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -338,7 +338,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 7,
+     "age": 8,
      "rank": "Not ranking / not indexed"
     },
     {
@@ -356,8 +356,8 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 6,
-     "rank": "Too new"
+     "age": 7,
+     "rank": "Not ranking / not indexed"
     },
     {
      "slug": "fall-fashion-trends-under-100",
@@ -374,8 +374,8 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 6,
-     "rank": "Too new"
+     "age": 7,
+     "rank": "Not ranking / not indexed"
     },
     {
      "slug": "bukayo-saka-injury-arsenal-fitness-update",
@@ -392,7 +392,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -410,7 +410,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 5,
+     "age": 6,
      "rank": "Too new"
     },
     {
@@ -428,7 +428,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -446,7 +446,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 4,
+     "age": 5,
      "rank": "Too new"
     },
     {
@@ -464,7 +464,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -482,7 +482,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 3,
+     "age": 4,
      "rank": "Too new"
     },
     {
@@ -500,7 +500,7 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 2,
+     "age": 3,
      "rank": "Too new"
     },
     {
@@ -518,25 +518,20 @@
      "impr": 0,
      "views": null,
      "pos": null,
-     "age": 0,
+     "age": 1,
      "rank": "Too new"
     }
    ],
-   "insights": "Audience countries (28d clicks): AU 0, FR 0, JP 0, NG 0, US 0\nBest posts: \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks); \"Fall Fashion Accessories Trends: Inside-Out Bags & More\" (fashion, GLOBAL, 0 impressions, 0 clicks)\nWeakest posts (avoid similar topics): \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks); \"Fall Fashion Accessories Trends: Inside-Out Bags & More\" (fashion, GLOBAL, 0 impressions, 0 clicks)\nAverage impressions by type: products 0, fashion 0, celebrity 0, news 0\nAverage impressions by region: GLOBAL 0, GB 0\nTop search queries now: fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
+   "insights": "Audience countries (28d clicks): AU 0, FR 0, IN 0, JP 0, NG 0, US 0\nBest posts: \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks); \"Fall Fashion Accessories Trends: Inside-Out Bags & More\" (fashion, GLOBAL, 0 impressions, 0 clicks)\nWeakest posts (avoid similar topics): \"The Lady-Who-Lounges Fall Knitwear Style Trend\" (products, GLOBAL, 0 impressions, 0 clicks); \"Unlocking Fashion Trends Through Viral Luxury Rental Apps\" (products, GLOBAL, 0 impressions, 0 clicks); \"Fall Fashion Accessories Trends: Inside-Out Bags & More\" (fashion, GLOBAL, 0 impressions, 0 clicks)\nAverage impressions by type: products 0, fashion 0, celebrity 0, news 0\nAverage impressions by region: GLOBAL 0, GB 0, US 0\nTop search queries now: celebrity fashion looks, fashion trends, style trend, style trends, vintagestyle, what style is trending right now",
    "gsc": {
     "ok": true,
     "range": [
-     "2026-09-29",
-     "2026-10-26"
+     "2026-09-30",
+     "2026-10-27"
     ],
     "clicks": 0,
-    "impr": 41,
+    "impr": 42,
     "series": [
-     {
-      "d": "09-29",
-      "c": 0,
-      "i": 0
-     },
      {
       "d": "09-30",
       "c": 0,
@@ -671,6 +666,11 @@
       "d": "10-26",
       "c": 0,
       "i": 1
+     },
+     {
+      "d": "10-27",
+      "c": 0,
+      "i": 1
      }
     ],
     "countries": [
@@ -683,6 +683,11 @@
       "country": "FR",
       "clicks": 0,
       "impr": 2
+     },
+     {
+      "country": "IN",
+      "clicks": 0,
+      "impr": 1
      },
      {
       "country": "JP",
@@ -701,6 +706,12 @@
      }
     ],
     "queries": [
+     {
+      "q": "celebrity fashion looks",
+      "clicks": 0,
+      "impr": 1,
+      "pos": 94
+     },
      {
       "q": "fashion trends",
       "clicks": 0,
@@ -746,6 +757,12 @@
       "pos": 4.2
      },
      {
+      "url": "https://stylevoguefashion.com/fashion/celebrity-style-inspiration",
+      "clicks": 0,
+      "impr": 4,
+      "pos": 30.2
+     },
+     {
       "url": "https://stylevoguefashion.com/fashion/vintage-fashion-revival",
       "clicks": 0,
       "impr": 4,
@@ -776,12 +793,6 @@
       "pos": 8
      },
      {
-      "url": "https://stylevoguefashion.com/fashion/celebrity-style-inspiration",
-      "clicks": 0,
-      "impr": 3,
-      "pos": 9
-     },
-     {
       "url": "https://stylevoguefashion.com/fashion?category=trending",
       "clicks": 0,
       "impr": 3,
@@ -797,5 +808,5 @@
    }
   }
  },
- "updated": "2026-10-29T20:17:36.698373Z"
+ "updated": "2026-10-30T00:59:02.499916Z"
 }
