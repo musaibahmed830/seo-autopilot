@@ -350,15 +350,18 @@
      "sitemap_urls": 52,
      "sitemap_newest": "2026-10-29",
      "issues": [],
-     "drafts_open": 1,
+     "drafts_open": 2,
      "merged_total": 38,
      "merged_30d": 38,
-     "notes": []
+     "notes": [
+      "Draft post created"
+     ],
+     "pr_url": "https://github.com/musaibahmed830/Fashion-2025/pull/44"
     }
    ],
    "repo": "musaibahmed830/Fashion-2025",
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-30T00:59:02.499916Z"
+ "updated": "2026-10-30T14:07:51.920527Z"
 }
