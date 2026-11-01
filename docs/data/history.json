@@ -373,11 +373,24 @@
       "Draft post created"
      ],
      "pr_url": "https://github.com/musaibahmed830/Fashion-2025/pull/47"
+    },
+    {
+     "date": "2026-11-01",
+     "load_sec": 0.82,
+     "links_checked": 25,
+     "links_broken": 0,
+     "sitemap_urls": 52,
+     "sitemap_newest": "2026-10-29",
+     "issues": [],
+     "drafts_open": 5,
+     "merged_total": 38,
+     "merged_30d": 38,
+     "notes": []
     }
    ],
    "repo": "musaibahmed830/Fashion-2025",
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-10-31T17:43:10.514446Z"
+ "updated": "2026-11-01T01:09:31.985445Z"
 }
