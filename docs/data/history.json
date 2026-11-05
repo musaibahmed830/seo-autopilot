@@ -425,11 +425,24 @@
      "merged_total": 38,
      "merged_30d": 38,
      "notes": []
+    },
+    {
+     "date": "2026-11-05",
+     "load_sec": 1.66,
+     "links_checked": 25,
+     "links_broken": 0,
+     "sitemap_urls": 52,
+     "sitemap_newest": "2026-10-29",
+     "issues": [],
+     "drafts_open": 5,
+     "merged_total": 38,
+     "merged_30d": 38,
+     "notes": []
     }
    ],
    "repo": "musaibahmed830/Fashion-2025",
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-11-04T01:20:58.500806Z"
+ "updated": "2026-11-05T03:29:41.214070Z"
 }
