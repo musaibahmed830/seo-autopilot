@@ -549,11 +549,28 @@
      "merged_total": 38,
      "merged_30d": 30,
      "notes": []
+    },
+    {
+     "date": "2026-11-13",
+     "load_sec": 0.1,
+     "links_checked": 0,
+     "links_broken": 0,
+     "sitemap_urls": 1,
+     "issues": [
+      "Homepage has no <title>",
+      "Homepage has no meta description",
+      "Homepage has 0 H1 tags (should be exactly 1)",
+      "No canonical tag on homepage"
+     ],
+     "drafts_open": 5,
+     "merged_total": 38,
+     "merged_30d": 27,
+     "notes": []
     }
    ],
    "repo": "musaibahmed830/Fashion-2025",
    "site": "https://stylevoguefashion.com"
   }
  },
- "updated": "2026-11-12T02:58:53.743286Z"
+ "updated": "2026-11-13T00:23:40.937570Z"
 }
